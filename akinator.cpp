@@ -102,14 +102,14 @@ err printTree (Node* head)
 
     if (head->left != NULL)
     {
-        //printf("(");
+        printf("(");
         printTree(head->left);
     }
 
-    else if (head->right != NULL)
+    if (head->right != NULL)
     {
-        //printf(")");
         printTree(head->right);
+        printf(")");
     }
 
     printf(" %d ", head->data);
