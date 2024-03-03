@@ -29,6 +29,8 @@ struct Node
     Node* parent = NULL;
 };
 
+err running(Node* tree);
+
 err NodeInsert (Node* head, data_t num);
 
 err printTree (Node* head);

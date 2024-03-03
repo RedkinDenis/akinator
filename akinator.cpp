@@ -1,8 +1,13 @@
 #include "akinator.h"
+#include <conio.h>
+
+int isLR(char* buf, int ptr);
+
+int check_answer ();
 
 int main()
 {
-    FOPEN(read, "treeSave1.txt", "rb");
+    FOPEN(read, "treeSave.txt", "rb");
 
     Node* tree = {};
 
@@ -13,22 +18,87 @@ int main()
 
     fclose(read);
 
-    printTree(tree);
+    running(tree);
 
-    FOPEN(out, "treeSave.txt", "wb");
+    //printTree(tree);
+
+    /*FOPEN(out, "treeSave.txt", "wb");
 
     fprintTree(out, tree);
 
-    fclose(out);
+    fclose(out);*/
+
 
     treeKill(tree);
+}
+
+err running(Node* tree)
+{
+    int ans = 0;
+
+    while(tree->right != NULL && tree->left != NULL)
+    {
+        printf("%s\n", tree->data);
+
+        ans = check_answer();
+
+        if (ans == 1)
+            tree = tree->left;
+        else if (ans == 0)
+            tree = tree->right;
+
+        system("cls");
+    }
+    printf("\nWas it %s ?", tree->data);
+
+    ans = check_answer();
+    if (ans == 1)
+    {
+        system("cls");
+        printf("\nI've always known about it.");
+        return SUCCESS;
+    }
+    else if (ans == 0)
+    {
+        //дописать запись нового элемента
+        CALLOC(tree->right, Node, 1);
+        CALLOC(tree->left, Node, 1);
+
+        CALLOC((tree->right)->data, char, DATA_LEN);
+        CALLOC((tree->left)->data, char, DATA_LEN);
+
+        strcpy((tree->right)->data, tree->data);
+
+
+    }
+
+    return SUCCESS;
+}
+
+int check_answer ()
+{
+    printf("\nPrint y/n\n");
+
+    int get = 0;
+    char ans = 0;
+
+    while (get == 0)
+    {
+        scanf("%c", &ans);
+
+        if (ans == 'y')
+            return 1;
+
+        if (ans == 'n')
+            return 0;
+    }
 }
 
 err fill_buffer (FILE* read, char** buf)
 {
     int fsize = GetFileSize(read);
 
-    CALLOC(*buf, char, (fsize + 1));
+    CALLOC(*buf, char, (fsize + 2));
 
     fread(*buf, sizeof(char), fsize, read);
 
@@ -37,6 +107,18 @@ err fill_buffer (FILE* read, char** buf)
     printf("\n");*/
 
     return SUCCESS;
+}
+
+int isLR(char* buf, int ptr)
+{
+    while(buf[ptr] != '(')
+    {
+        if(buf[ptr] != ')')
+            ptr++;
+        else
+            return 0;
+    }
+    return 1;
 }
 
 err importTree (FILE* read, Node* tree)
@@ -57,7 +139,7 @@ err importTree (FILE* read, Node* tree)
     while (level > 0)
     {
         if (buf[ptr] == '(')
-        {
+        {                                                              // возможно падает из за редактирования базы
             ptr++;
 
             CHANGE_NODE(tree, tree->left);
@@ -71,8 +153,13 @@ err importTree (FILE* read, Node* tree)
             level--;
             ptr++;
 
-            if (buf[ptr + 1] == '(')
+           /* while (buf[ptr] != '(' && buf[ptr] != ')')
+                ptr += 1;*/
+
+            if (buf[ptr] == '(' || ((buf[ptr + 1] == '(') && (buf[ptr] == '\n')) || ((buf[ptr + 2] == '(') && (buf[ptr + 1] == '\n') && (buf[ptr] == '\r')) )
+            //if (isLR(buf, ptr))
             {
+                //printf("here");
                 ptr++;
 
                 CHANGE_NODE(tree, tree->right);
@@ -105,7 +192,7 @@ void get_data(char* buf, int* ptr, Node* tree)
 
 }
 
-err NodeInsert (Node* head, data_t num)
+/*err NodeInsert (Node* head, data_t num)
 {
     CHECK_PTR(head);
 
@@ -141,7 +228,7 @@ err NodeInsert (Node* head, data_t num)
     }
 
     return SUCCESS;
-}
+}*/
 
 err printTree (Node* head)
 {
@@ -213,7 +300,7 @@ err fprintTree__ (FILE* out, Node* head, int* tab)
     return SUCCESS;
 }
 
-err deleteNode (Node* node)
+/*err deleteNode (Node* node)
 {
     CHECK_PTR(node);
 
@@ -221,6 +308,7 @@ err deleteNode (Node* node)
     free(node->left);
     free(node);
 }
+*/
 
 err treeKill (Node* head)
 {
@@ -236,7 +324,7 @@ err treeKill (Node* head)
     return SUCCESS;
 }
 
-err treeSearch (Node* head, data_t srch, Node** return_t)
+/*err treeSearch (Node* head, data_t srch, Node** return_t)
 {
     CHECK_PTR(head);
     CHECK_PTR(return_t);
@@ -272,4 +360,4 @@ err treeSearch (Node* head, data_t srch, Node** return_t)
             }
         }
     }
-}
+}*/
