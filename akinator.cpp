@@ -1,69 +1,106 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include "C:\Users\vp717\Desktop\ilab\err_codes.h"
-
-
-typedef int data_t;
-
-struct Node
-{
-    data_t data = 0;
-    Node* left = NULL;
-    Node* right = NULL;
-};
-
-err NodeInsert (Node* head, data_t num);
-
-err printTree (Node* head);
-
-err treeKill (Node* head);
-
-err deleteNode (Node* head);
-
-err treeSearch (Node* head, data_t srch, Node** return_t);
+#include "akinator.h"
 
 int main()
 {
+    FOPEN(read, "treeSave.txt", "rb");
+
     Node* tree = {};
 
-    Node* tree_temp = (Node*)calloc(1, sizeof(Node));
-    if (tree_temp == NULL)
-        return CALLOC_ERROR;
-    tree = tree_temp;
-
-    //NodeInit(&tree);
-
+    CALLOC(tree, Node, 1);
     tree->data = 100;
 
-    NodeInsert(tree, 50);
-    NodeInsert(tree, 60);
-    NodeInsert(tree, 40);
-    NodeInsert(tree, 44);
+    importTree(read, tree);
 
-    /*Node* ret;
-    data_t srch = 45;
-
-    if (treeSearch(tree, srch, &ret) == SUCCESS)
-        printf("\n%d\n", ret->data);
-    else
-        printf("\nUNFOUND");*/
+    fclose(read);
 
     printTree(tree);
+
+    /*FOPEN(out, "treeSave.txt", "wb");
+
+    fprintTree(out, tree);
+
+    fclose(out);*/
 
     treeKill(tree);
 }
 
+err fill_buffer (FILE* read, char** buf)
+{
+    int fsize = GetFileSize(read);
+
+    CALLOC(*buf, char, (fsize + 1));
+
+    fread(*buf, sizeof(char), fsize, read);
+
+    return SUCCESS;
+}
+
+err importTree (FILE* read, Node* tree)
+{
+    char* buf = 0;
+    fill_buffer(read, &buf);
+
+    /*for (int i = 0; i < fsize - 1; i++)
+        printf("%c", buf[i]);
+    printf("\n");*/
+
+    int level = 0, ptr = 0;
+
+    if (buf[ptr] == '(')
+    {
+        ptr++;
+        level++;
+
+        sscanf(buf + ptr, " %d ", &(tree->data));
+
+        while (buf[ptr] != '(' && buf[ptr] != ')')
+            ptr++;
+    }
+
+    while (level > 0)
+    {
+        if (buf[ptr] == '(')
+        {
+            ptr++;
+
+            CHANGE_NODE(tree, tree->left);
+
+            sscanf(buf + ptr, " %d", &(tree->data));
+
+            while (buf[ptr] != '(' && buf[ptr] != ')')
+                ptr++;
+        }
+        else if (buf[ptr] == ')')
+        {
+            tree = tree->parent;
+            level--;
+            ptr++;
+
+            if (buf[ptr] == '(')
+            {
+                ptr++;
+
+                CHANGE_NODE(tree, tree->right);
+
+                sscanf(buf + ptr, " %d ", &(tree->data));
+
+                while (buf[ptr] != '(' && buf[ptr] != ')')
+                    ptr++;
+            }
+        }
+    }
+
+    return SUCCESS;
+}
+
 err NodeInsert (Node* head, data_t num)
 {
-    if (head == NULL)
-        return NULL_INSTEAD_PTR;
+    CHECK_PTR(head);
 
     Node* node_temp = {};
+    void* temp = 0;
 
-    Node* node_temp1 = (Node*)calloc(1, sizeof(Node));
-    if (node_temp1 == NULL)
-        return CALLOC_ERROR;
-    node_temp = node_temp1;
+    CALLOC(node_temp, Node, 1);
 
     node_temp->data = num;
 
@@ -89,7 +126,6 @@ err NodeInsert (Node* head, data_t num)
             else
                 head = head->left;
         }
-        //printf("here");
     }
 
     return SUCCESS;
@@ -97,30 +133,52 @@ err NodeInsert (Node* head, data_t num)
 
 err printTree (Node* head)
 {
-    if (head == NULL)
-        return NULL_INSTEAD_PTR;
+    CHECK_PTR(head);
+
+    printf("(");
+    printf(" %d ", head->data);                              //записывать и извлекать дерево в preorder варианте
 
     if (head->left != NULL)
     {
-        printf("(");
         printTree(head->left);
     }
 
     if (head->right != NULL)
     {
         printTree(head->right);
-        printf(")");
     }
 
-    printf(" %d ", head->data);
+    printf(")");
+
+    return SUCCESS;
+}
+
+err fprintTree (FILE* out, Node* head)
+{
+    CHECK_PTR(head);
+
+
+    fprintf(out, "(");
+    fprintf(out, " %d ", head->data);
+
+    if (head->left != NULL)
+    {
+        fprintTree(out, head->left);
+    }
+
+    if (head->right != NULL)
+    {
+        fprintTree(out, head->right);
+    }
+
+    fprintf(out, ")");
 
     return SUCCESS;
 }
 
 err deleteNode (Node* node)
 {
-    if (node == NULL)
-        return NULL_INSTEAD_PTR;
+    CHECK_PTR(node);
 
     free(node->right);
     free(node->left);
@@ -129,8 +187,7 @@ err deleteNode (Node* node)
 
 err treeKill (Node* head)
 {
-    if (head == NULL)
-        return NULL_INSTEAD_PTR;
+    CHECK_PTR(head);
 
     if (head->left != NULL)
         treeKill(head->left);
@@ -144,8 +201,8 @@ err treeKill (Node* head)
 
 err treeSearch (Node* head, data_t srch, Node** return_t)
 {
-    if (head == NULL || return_t == NULL)
-        return NULL_INSTEAD_PTR;
+    CHECK_PTR(head);
+    CHECK_PTR(return_t);
 
     while(1)
     {
@@ -172,7 +229,10 @@ err treeSearch (Node* head, data_t srch, Node** return_t)
                 return treeSearch(head->right, srch, return_t);
             }
             else
+            {
+                *return_t = NULL;
                 return UNFOUND;
+            }
         }
     }
 }
