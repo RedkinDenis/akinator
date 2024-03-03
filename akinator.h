@@ -33,7 +33,11 @@ err NodeInsert (Node* head, data_t num);
 
 err printTree (Node* head);
 
+err printTree__ (Node* head, int* tab);
+
 err fprintTree (FILE* out, Node* head);
+
+err fprintTree__ (FILE* out, Node* head, int* tab);
 
 err treeKill (Node* head);
 

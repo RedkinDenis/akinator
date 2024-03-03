@@ -2,7 +2,7 @@
 
 int main()
 {
-    FOPEN(read, "treeSave.txt", "rb");
+    FOPEN(read, "treeSave1.txt", "rb");
 
     Node* tree = {};
 
@@ -15,11 +15,11 @@ int main()
 
     printTree(tree);
 
-    /*FOPEN(out, "treeSave.txt", "wb");
+    FOPEN(out, "treeSave.txt", "wb");
 
     fprintTree(out, tree);
 
-    fclose(out);*/
+    fclose(out);
 
     treeKill(tree);
 }
@@ -32,6 +32,10 @@ err fill_buffer (FILE* read, char** buf)
 
     fread(*buf, sizeof(char), fsize, read);
 
+    /*for (int i = 0; i < fsize - 1; i++)
+        printf(" (%c)[%d] ", (*buf)[i], (*buf)[i]);
+    printf("\n");*/
+
     return SUCCESS;
 }
 
@@ -39,10 +43,6 @@ err importTree (FILE* read, Node* tree)
 {
     char* buf = 0;
     fill_buffer(read, &buf);
-
-    /*for (int i = 0; i < fsize - 1; i++)
-        printf("%c", buf[i]);
-    printf("\n");*/
 
     int level = 0, ptr = 0, i = 0;
 
@@ -71,7 +71,7 @@ err importTree (FILE* read, Node* tree)
             level--;
             ptr++;
 
-            if (buf[ptr] == '(')
+            if (buf[ptr + 1] == '(')
             {
                 ptr++;
 
@@ -145,19 +145,32 @@ err NodeInsert (Node* head, data_t num)
 
 err printTree (Node* head)
 {
+    int tab = 0;
+    return printTree__(head, &tab);
+}
+
+err printTree__ (Node* head, int* tab)
+{
     CHECK_PTR(head);
 
     printf("(");
+    for(int i = 0; i < *tab; i++)
+        printf("    ");
+
     printf("*%s*", head->data);
 
     if (head->left != NULL)
     {
-        printTree(head->left);
+        *tab += 1;
+        printf("\n");
+        printTree__(head->left, tab);
     }
 
     if (head->right != NULL)
     {
-        printTree(head->right);
+        printf("\n");
+        printTree__(head->right, tab);
+        *tab -= 1;
     }
 
     printf(")");
@@ -167,20 +180,32 @@ err printTree (Node* head)
 
 err fprintTree (FILE* out, Node* head)
 {
+    int tab = 0;
+    return fprintTree__(out, head, &tab);
+}
+
+err fprintTree__ (FILE* out, Node* head, int* tab)
+{
     CHECK_PTR(head);
 
-
     fprintf(out, "(");
-    fprintf(out, " %d ", head->data);
+    for(int i = 0; i < *tab; i++)
+        fprintf(out, "    ");
+
+    fprintf(out, "*%s*", head->data);
 
     if (head->left != NULL)
     {
-        fprintTree(out, head->left);
+        *tab += 1;
+        fprintf(out, "\n");
+        fprintTree__(out, head->left, tab);
     }
 
     if (head->right != NULL)
     {
-        fprintTree(out, head->right);
+        fprintf(out, "\n");
+        fprintTree__(out, head->right, tab);
+        *tab -= 1;
     }
 
     fprintf(out, ")");
