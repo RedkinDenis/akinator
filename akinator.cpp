@@ -7,7 +7,7 @@ int main()
     Node* tree = {};
 
     CALLOC(tree, Node, 1);
-    tree->data = 100;
+    CALLOC(tree->data, char, DATA_LEN);
 
     importTree(read, tree);
 
@@ -44,17 +44,14 @@ err importTree (FILE* read, Node* tree)
         printf("%c", buf[i]);
     printf("\n");*/
 
-    int level = 0, ptr = 0;
+    int level = 0, ptr = 0, i = 0;
 
     if (buf[ptr] == '(')
     {
         ptr++;
         level++;
 
-        sscanf(buf + ptr, " %d ", &(tree->data));
-
-        while (buf[ptr] != '(' && buf[ptr] != ')')
-            ptr++;
+        get_data(buf, &ptr, tree);
     }
 
     while (level > 0)
@@ -64,11 +61,9 @@ err importTree (FILE* read, Node* tree)
             ptr++;
 
             CHANGE_NODE(tree, tree->left);
+            CALLOC(tree->data, char, DATA_LEN);
 
-            sscanf(buf + ptr, " %d", &(tree->data));
-
-            while (buf[ptr] != '(' && buf[ptr] != ')')
-                ptr++;
+            get_data(buf, &ptr, tree);
         }
         else if (buf[ptr] == ')')
         {
@@ -81,16 +76,33 @@ err importTree (FILE* read, Node* tree)
                 ptr++;
 
                 CHANGE_NODE(tree, tree->right);
+                CALLOC(tree->data, char, DATA_LEN);
 
-                sscanf(buf + ptr, " %d ", &(tree->data));
-
-                while (buf[ptr] != '(' && buf[ptr] != ')')
-                    ptr++;
+                get_data(buf, &ptr, tree);
             }
         }
     }
 
     return SUCCESS;
+}
+
+void get_data(char* buf, int* ptr, Node* tree)
+{
+    int i = 0;
+    while (buf[*ptr - 1] != '*')
+        *ptr += 1;
+
+    while (buf[*ptr] != '*')
+    {
+        tree->data[i] = buf[*ptr];
+        *ptr += 1;
+        i++;
+    }
+    i = 0;
+
+    while (buf[*ptr] != '(' && buf[*ptr] != ')')
+        *ptr += 1;
+
 }
 
 err NodeInsert (Node* head, data_t num)
@@ -136,7 +148,7 @@ err printTree (Node* head)
     CHECK_PTR(head);
 
     printf("(");
-    printf(" %d ", head->data);                              //записывать и извлекать дерево в preorder варианте
+    printf("*%s*", head->data);
 
     if (head->left != NULL)
     {

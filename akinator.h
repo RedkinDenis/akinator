@@ -6,6 +6,7 @@
 #include "input_output.h"
 #include "C:\Users\vp717\Desktop\ilab\err_codes.h"
 #include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
+#define DATA_LEN 30
 
 #define CHANGE_NODE(from, to)        \
     do                               \
@@ -18,11 +19,11 @@
     level++;                         \
     } while(0)
 
-typedef int data_t;
+typedef char* data_t;
 
 struct Node
 {
-    data_t data = 15;
+    data_t data = 0;
     Node* left = NULL;
     Node* right = NULL;
     Node* parent = NULL;
@@ -45,5 +46,7 @@ err importTree (FILE* read ,Node* head);
 err importTree (FILE* read ,Node* head);
 
 err fill_buffer (FILE* read, char** buf);
+
+void get_data(char* buf, int* ptr, Node* tree);
 
 #endif //AKINATOR_H
