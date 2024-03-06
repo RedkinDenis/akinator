@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "input_output.h"
 #include "C:\Users\vp717\Desktop\ilab\err_codes.h"
 #include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
@@ -29,9 +30,19 @@ struct Node
     Node* parent = NULL;
 };
 
+int check_answer ();
+
+char* make_question (char* data);
+
+void create_window ();
+
+void put_answer (char* data);
+
 err running(Node* tree);
 
-err NodeInsert (Node* head, data_t num);
+void input_name (char* data, int data_len);
+
+void input_qst (char* data, int data_len);
 
 err printTree (Node* head);
 
@@ -53,6 +64,6 @@ err importTree (FILE* read ,Node* head);
 
 err fill_buffer (FILE* read, char** buf);
 
-void get_data(char* buf, int* ptr, Node* tree);
+void get_data (char* buf, int* ptr, Node* tree);
 
 #endif //AKINATOR_H

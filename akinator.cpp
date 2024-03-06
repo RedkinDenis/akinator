@@ -1,9 +1,7 @@
 #include "akinator.h"
 #include <conio.h>
-
-int isLR(char* buf, int ptr);
-
-int check_answer ();
+#include "..\TXLib.h"
+#include <windows.h>
 
 int main()
 {
@@ -17,6 +15,8 @@ int main()
     importTree(read, tree);
 
     fclose(read);
+
+    create_window ();
 
     running(tree);
 
@@ -32,13 +32,54 @@ int main()
     treeKill(tree);
 }
 
+void create_window ()
+{
+    txCreateWindow (800, 600);
+
+    txSetColor (TX_WHITE);
+    txSetFillColor (TX_TRANSPARENT);
+    txRectangle (10, 10, 790, 590);
+
+
+    txTextOut (350, 50, "Akinator");
+
+    txRectangle (100, 400, 200, 500);
+    txTextOut (150, 450, "Yes");
+
+    txRectangle (400, 400, 500, 500);
+    txTextOut (450, 450, "No");
+}
+
+void put_answer (char* data)
+{
+    txSetFillColor (TX_BLACK);
+    txRectangle (0, 150, 800, 250);
+    txFloodFill (300, 200);
+    txDrawText(0, 150, 800, 250, data);
+}
+
+char* make_question (char* data)
+{
+    char* question = (char*)calloc(40, sizeof(char));
+    strcpy(question, "Was it ");
+    strcat(question, data);
+    strcat(question, " ?");
+
+    return question;
+}
+
 err running(Node* tree)
 {
     int ans = 0;
 
     while(tree->right != NULL && tree->left != NULL)
     {
-        printf("%s\n", tree->data);
+        //txTextOut (300, 150, tree->data);
+
+        put_answer (tree->data);
+
+
+        //printf("%s\n", tree->data);
 
         ans = check_answer();
 
@@ -49,35 +90,99 @@ err running(Node* tree)
 
         system("cls");
     }
-    printf("\nWas it %s ?", tree->data);
+    //printf("\nWas it %s ?", tree->data);
+
+    char* question = make_question(tree->data);
+    put_answer (question);
 
     ans = check_answer();
+
     if (ans == 1)
     {
         system("cls");
-        printf("\nI've always known about it.");
+        put_answer("\nI've always known about it.");
         return SUCCESS;
     }
     else if (ans == 0)
     {
-        //дописать запись нового элемента
         CALLOC(tree->right, Node, 1);
         CALLOC(tree->left, Node, 1);
 
-        CALLOC((tree->right)->data, char, DATA_LEN);
-        CALLOC((tree->left)->data, char, DATA_LEN);
+        Node* right = tree->right;
+        Node* left = tree->left;
 
-        strcpy((tree->right)->data, tree->data);
+        right->parent = tree;
+        left->parent = tree;
 
+        CALLOC(right->data, char, DATA_LEN);
+        CALLOC(left->data, char, DATA_LEN);
+
+        printf("What did you mean?\n");
+
+        input_name(left->data, DATA_LEN);
+
+        strcpy(right->data, tree->data);
+
+        printf("What different bitween %s and %s ?\n", left->data, right->data);
+
+        input_qst(tree->data, DATA_LEN);
+
+        printf("You managed to defeat me.");
 
     }
 
     return SUCCESS;
 }
 
+void input_qst(char* data, int data_len)
+{
+    int i = 0;
+    //getchar();
+    scanf("%c", data + i);
+
+    while((data[i] != '\n') && (i < data_len - 2))
+    {
+        i++;
+        scanf("%c", data + i);
+    }
+    data[i] = '\?';
+    i++;
+    data[i] = '\0';
+}
+
+void input_name(char* data, int data_len)
+{
+    int i = 0;
+    getchar();
+    scanf("%c", data + i);
+
+    while((data[i] != '\n') && (i < data_len - 1))
+    {
+        i++;
+        scanf("%c", data + i);
+    }
+    data[i] = '\0';
+
+}
+
 int check_answer ()
 {
-    printf("\nPrint y/n\n");
+    RECT yes = { 100, 400, 200, 500 };
+    RECT no  = { 400, 400, 500, 500 };
+
+    while (txMouseButtons() != 1);
+
+    if (In (txMousePos(), yes))
+    {
+        while (txMouseButtons() != 0);
+        return 1;
+    }
+    else if (In (txMousePos(), no))
+    {
+        while (txMouseButtons() != 0);
+        return 0;
+    }
+    /*printf("\nPrint y/n\n");
 
     int get = 0;
     char ans = 0;
@@ -91,7 +196,9 @@ int check_answer ()
 
         if (ans == 'n')
             return 0;
-    }
+    }*/
+
+
 }
 
 err fill_buffer (FILE* read, char** buf)
@@ -107,18 +214,6 @@ err fill_buffer (FILE* read, char** buf)
     printf("\n");*/
 
     return SUCCESS;
-}
-
-int isLR(char* buf, int ptr)
-{
-    while(buf[ptr] != '(')
-    {
-        if(buf[ptr] != ')')
-            ptr++;
-        else
-            return 0;
-    }
-    return 1;
 }
 
 err importTree (FILE* read, Node* tree)
@@ -159,7 +254,6 @@ err importTree (FILE* read, Node* tree)
             if (buf[ptr] == '(' || ((buf[ptr + 1] == '(') && (buf[ptr] == '\n')) || ((buf[ptr + 2] == '(') && (buf[ptr + 1] == '\n') && (buf[ptr] == '\r')) )
             //if (isLR(buf, ptr))
             {
-                //printf("here");
                 ptr++;
 
                 CHANGE_NODE(tree, tree->right);
@@ -191,44 +285,6 @@ void get_data(char* buf, int* ptr, Node* tree)
         *ptr += 1;
 
 }
-
-/*err NodeInsert (Node* head, data_t num)
-{
-    CHECK_PTR(head);
-
-    Node* node_temp = {};
-    void* temp = 0;
-
-    CALLOC(node_temp, Node, 1);
-
-    node_temp->data = num;
-
-    while(1)
-    {
-        if (num >= head->data)
-        {
-            if (head->right == NULL)
-            {
-                head->right = node_temp;
-                break;
-            }
-            else
-                head = head->right;
-        }
-        else
-        {
-            if (head->left == NULL)
-            {
-                head->left = node_temp;
-                break;
-            }
-            else
-                head = head->left;
-        }
-    }
-
-    return SUCCESS;
-}*/
 
 err printTree (Node* head)
 {
@@ -300,16 +356,6 @@ err fprintTree__ (FILE* out, Node* head, int* tab)
     return SUCCESS;
 }
 
-/*err deleteNode (Node* node)
-{
-    CHECK_PTR(node);
-
-    free(node->right);
-    free(node->left);
-    free(node);
-}
-*/
-
 err treeKill (Node* head)
 {
     CHECK_PTR(head);
@@ -324,40 +370,3 @@ err treeKill (Node* head)
     return SUCCESS;
 }
 
-/*err treeSearch (Node* head, data_t srch, Node** return_t)
-{
-    CHECK_PTR(head);
-    CHECK_PTR(return_t);
-
-    while(1)
-    {
-        if (head->data == srch)
-        {
-            *return_t = head;
-            return SUCCESS;
-        }
-
-        if (head->data > srch)
-        {
-            if (head->left != NULL)
-            {
-                return treeSearch(head->left, srch, return_t);
-            }
-            else
-                return UNFOUND;
-        }
-
-        if (head->data < srch)
-        {
-            if (head->right != NULL)
-            {
-                return treeSearch(head->right, srch, return_t);
-            }
-            else
-            {
-                *return_t = NULL;
-                return UNFOUND;
-            }
-        }
-    }
-}*/
