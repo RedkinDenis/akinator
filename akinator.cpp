@@ -20,7 +20,7 @@ int main()
 
     running(tree);
 
-    //printTree(tree);
+    printTree(tree);
 
     /*FOPEN(out, "treeSave.txt", "wb");
 
@@ -117,17 +117,24 @@ err running(Node* tree)
         CALLOC(right->data, char, DATA_LEN);
         CALLOC(left->data, char, DATA_LEN);
 
-        printf("What did you mean?\n");
+        //printf("What did you mean?\n");
 
-        input_name(left->data, DATA_LEN);
+        char* temp = (char*)txInputBox("What did you mean?", "Help me become better");
+        strcpy(left->data, temp);
+
+        //input_name(left->data, DATA_LEN);
 
         strcpy(right->data, tree->data);
 
-        printf("What different bitween %s and %s ?\n", left->data, right->data);
+        char* diff = (char*)calloc(100, sizeof(char));
 
-        input_qst(tree->data, DATA_LEN);
+        sprintf(diff, "What different bitween %s and %s ?\n", left->data, right->data);
 
-        printf("You managed to defeat me.");
+        //input_qst(tree->data, DATA_LEN);
+        temp = (char*)txInputBox(diff, "Help me become better");
+        strcpy(tree->data, temp);
+
+        put_answer("You managed to defeat me.");
 
     }
 
@@ -182,23 +189,6 @@ int check_answer ()
         while (txMouseButtons() != 0);
         return 0;
     }
-    /*printf("\nPrint y/n\n");
-
-    int get = 0;
-    char ans = 0;
-
-    while (get == 0)
-    {
-        scanf("%c", &ans);
-
-        if (ans == 'y')
-            return 1;
-
-        if (ans == 'n')
-            return 0;
-    }*/
-
-
 }
 
 err fill_buffer (FILE* read, char** buf)
@@ -208,10 +198,6 @@ err fill_buffer (FILE* read, char** buf)
     CALLOC(*buf, char, (fsize + 2));
 
     fread(*buf, sizeof(char), fsize, read);
-
-    /*for (int i = 0; i < fsize - 1; i++)
-        printf(" (%c)[%d] ", (*buf)[i], (*buf)[i]);
-    printf("\n");*/
 
     return SUCCESS;
 }
