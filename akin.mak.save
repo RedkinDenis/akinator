@@ -1,2 +1,0 @@
-all:akinator.cpp input_output.cpp interface.cpp
-    g++ akinator.cpp input_output.cpp interface.cpp -o akin
