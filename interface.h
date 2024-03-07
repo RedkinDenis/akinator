@@ -12,7 +12,7 @@ enum answer
 
 enum answer check_answer ();
 
-void InputBox (char* data, const char* message);
+void InputBox (char* data, const char* message, int data_len);
 
 void create_window ();
 

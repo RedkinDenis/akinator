@@ -16,7 +16,9 @@
 (                    *Lunina*)
 (                    *Petrovich*))
 (                *He's a physicist?*
-(                    *Ovchinkin*)
+(                    *He is labnik?*
+(                        *Zeleny*)
+(                        *Ovchinkin*))
 (                    *Chubarov*))))
 (        *Rector?*
 (            *Livanov*)

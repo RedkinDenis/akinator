@@ -8,10 +8,10 @@ void create_window ()
 {
     txCreateWindow (1000, 550);
 
-    HDC  background_CopiedFromHelp = txLoadImage ("wizard.bmp");
+    HDC  background_CopiedFromHelp = txLoadImage ("background.bmp");
 
     if (!background_CopiedFromHelp)
-      txMessageBox ("Не могу загрузить фон из wizard.bmp");
+      txMessageBox ("Не могу загрузить фон из background.bmp");
 
     txBitBlt (txDC(), 0, 0, 1000, 550, background_CopiedFromHelp, 0, 0);
 
@@ -60,12 +60,14 @@ enum answer check_answer ()
         }
         else
             Sleep(1);
+
+        system("cls");
     }
     return fail;
 }
 
-void InputBox (char* data, const char* message)
+void InputBox (char* data, const char* message, int data_len)
 {
     const char* temp = txInputBox(message, "Help me become better");
-    strcpy(data, temp);
+    strncpy(data, temp, data_len - 1);
 }

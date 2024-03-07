@@ -60,4 +60,6 @@ err fill_buffer (FILE* read, char** buf);
 
 void get_data (char* buf, int* ptr, Node* tree);
 
+void goto_prace (char* buf, int* ptr);
+
 #endif //AKINATOR_H

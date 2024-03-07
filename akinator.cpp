@@ -2,12 +2,12 @@
 
 int main()
 {
-    FOPEN(read, "treeSave.txt", "rb");
+    FOPEN(read, "treeSave1.txt", "rb");
 
     Node* tree = {};
 
     CALLOC(tree, Node, 1);
-    CALLOC(tree->data, char, DATA_LEN);
+    CALLOC(tree->data, char, DATA_LEN + 1);
 
     importTree(read, tree);
 
@@ -17,21 +17,20 @@ int main()
 
     running(tree);
 
-    //printTree(tree);
+    printTree(tree);
 
-    /*FOPEN(out, "treeSave.txt", "wb");
+   /* FOPEN(out, "treeSave1.txt", "wb");
 
     fprintTree(out, tree);
 
     fclose(out);*/
-
 
     treeKill(tree);
 }
 
 char* make_question (char* data)
 {
-    char* question = (char*)calloc(40, sizeof(char));
+    char* question = (char*)calloc(DATA_LEN + 1, sizeof(char));
     strcpy(question, "Was it ");
     strcat(question, data);
     strcat(question, " ?");
@@ -78,18 +77,19 @@ err running(Node* tree)
         right->parent = tree;
         left->parent = tree;
 
-        CALLOC(right->data, char, DATA_LEN);
-        CALLOC(left->data, char, DATA_LEN);
+        CALLOC(right->data, char, DATA_LEN + 1);
+        CALLOC(left->data, char, DATA_LEN + 1);
 
-        InputBox(left->data, "What did you mean?");
+        InputBox(left->data, "What did you mean?", DATA_LEN);
 
         strcpy(right->data, tree->data);
 
-        char* diff = (char*)calloc(100, sizeof(char));
+        char* what_different = 0;
+        CALLOC(what_different, char, (strlen("What different bitween  and  ?") + strlen(left->data) + strlen(right->data)));
 
-        sprintf(diff, "What different bitween %s and %s ?\n", left->data, right->data);
+        sprintf(what_different, "What different bitween %s and %s ?", left->data, right->data);
 
-        InputBox(tree->data, diff);
+        InputBox(tree->data, what_different, DATA_LEN);
         strcat(tree->data, "?");
 
         put_answer("You managed to defeat me.");
@@ -138,7 +138,7 @@ err importTree (FILE* read, Node* tree)
             ptr++;
 
             CHANGE_NODE(tree, tree->left);
-            CALLOC(tree->data, char, DATA_LEN);
+            CALLOC(tree->data, char, DATA_LEN + 1);
 
             get_data(buf, &ptr, tree);
         }
@@ -148,13 +148,14 @@ err importTree (FILE* read, Node* tree)
             level--;
             ptr++;
 
-            if (buf[ptr] == '(' || ((buf[ptr + 1] == '(') && (buf[ptr] == '\n')) || ((buf[ptr + 2] == '(') && (buf[ptr + 1] == '\n') && (buf[ptr] == '\r')) )
-            //if (isLR(buf, ptr))
+            goto_prace(buf, &ptr);
+
+            if (buf[ptr] == '(')
             {
                 ptr++;
 
                 CHANGE_NODE(tree, tree->right);
-                CALLOC(tree->data, char, DATA_LEN);
+                CALLOC(tree->data, char, DATA_LEN + 1);
 
                 get_data(buf, &ptr, tree);
             }
@@ -164,13 +165,19 @@ err importTree (FILE* read, Node* tree)
     return SUCCESS;
 }
 
+void goto_prace (char* buf, int* ptr)
+{
+    while((buf[*ptr] != '(') && (buf[*ptr] != ')'))
+        *ptr += 1;
+}
+
 void get_data(char* buf, int* ptr, Node* tree)
 {
     int i = 0;
     while (buf[*ptr - 1] != '*')
         *ptr += 1;
 
-    while (buf[*ptr] != '*')
+    while ((buf[*ptr] != '*') && i <= DATA_LEN)
     {
         tree->data[i] = buf[*ptr];
         *ptr += 1;
@@ -178,9 +185,7 @@ void get_data(char* buf, int* ptr, Node* tree)
     }
     i = 0;
 
-    while (buf[*ptr] != '(' && buf[*ptr] != ')')
-        *ptr += 1;
-
+    goto_prace(buf, ptr);
 }
 
 err printTree (Node* head)
