@@ -1,0 +1,23 @@
+(*Is animal?*
+(    *Live in 1?*
+(        *Poltorashka*)
+(        *Mobile game character?*
+(            *It's dog?*
+(                *Ben*)
+(                *My talking Tom*))
+(            *Any animal*)))
+(    *Prepod?*
+(        *Fucker?*
+(            *He teaches physics?*
+(                *Paukov*)
+(                *Lesha*))
+(            *He teaches matan?*
+(                *Women?*
+(                    *Lunina*)
+(                    *Petrovich*))
+(                *He's a physicist?*
+(                    *Ovchinkin*)
+(                    *Chubarov*))))
+(        *Rector?*
+(            *Livanov*)
+(            *Yakov*))))

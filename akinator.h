@@ -5,8 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "input_output.h"
+#include "interface.h"
 #include "C:\Users\vp717\Desktop\ilab\err_codes.h"
 #include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
+#include <conio.h>
+
+
+#include <windows.h>
+
 #define DATA_LEN 30
 
 #define CHANGE_NODE(from, to)        \
@@ -30,19 +36,9 @@ struct Node
     Node* parent = NULL;
 };
 
-int check_answer ();
-
 char* make_question (char* data);
 
-void create_window ();
-
-void put_answer (char* data);
-
 err running(Node* tree);
-
-void input_name (char* data, int data_len);
-
-void input_qst (char* data, int data_len);
 
 err printTree (Node* head);
 
@@ -57,8 +53,6 @@ err treeKill (Node* head);
 err deleteNode (Node* head);
 
 err treeSearch (Node* head, data_t srch, Node** return_t);
-
-err importTree (FILE* read ,Node* head);
 
 err importTree (FILE* read ,Node* head);
 

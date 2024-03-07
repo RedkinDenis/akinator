@@ -1,7 +1,4 @@
 #include "akinator.h"
-#include <conio.h>
-#include "..\TXLib.h"
-#include <windows.h>
 
 int main()
 {
@@ -20,7 +17,7 @@ int main()
 
     running(tree);
 
-    printTree(tree);
+    //printTree(tree);
 
     /*FOPEN(out, "treeSave.txt", "wb");
 
@@ -30,32 +27,6 @@ int main()
 
 
     treeKill(tree);
-}
-
-void create_window ()
-{
-    txCreateWindow (800, 600);
-
-    txSetColor (TX_WHITE);
-    txSetFillColor (TX_TRANSPARENT);
-    txRectangle (10, 10, 790, 590);
-
-
-    txTextOut (350, 50, "Akinator");
-
-    txRectangle (100, 400, 200, 500);
-    txTextOut (150, 450, "Yes");
-
-    txRectangle (400, 400, 500, 500);
-    txTextOut (450, 450, "No");
-}
-
-void put_answer (char* data)
-{
-    txSetFillColor (TX_BLACK);
-    txRectangle (0, 150, 800, 250);
-    txFloodFill (300, 200);
-    txDrawText(0, 150, 800, 250, data);
 }
 
 char* make_question (char* data)
@@ -70,40 +41,33 @@ char* make_question (char* data)
 
 err running(Node* tree)
 {
-    int ans = 0;
+    answer ans;
+
+    system("cls");
 
     while(tree->right != NULL && tree->left != NULL)
     {
-        //txTextOut (300, 150, tree->data);
-
         put_answer (tree->data);
-
-
-        //printf("%s\n", tree->data);
 
         ans = check_answer();
 
-        if (ans == 1)
+        if (ans == YES)
             tree = tree->left;
-        else if (ans == 0)
+        else if (ans == NO)
             tree = tree->right;
-
-        system("cls");
     }
-    //printf("\nWas it %s ?", tree->data);
 
     char* question = make_question(tree->data);
     put_answer (question);
 
     ans = check_answer();
 
-    if (ans == 1)
+    if (ans == YES)
     {
-        system("cls");
         put_answer("\nI've always known about it.");
         return SUCCESS;
     }
-    else if (ans == 0)
+    else if (ans == NO)
     {
         CALLOC(tree->right, Node, 1);
         CALLOC(tree->left, Node, 1);
@@ -117,12 +81,7 @@ err running(Node* tree)
         CALLOC(right->data, char, DATA_LEN);
         CALLOC(left->data, char, DATA_LEN);
 
-        //printf("What did you mean?\n");
-
-        char* temp = (char*)txInputBox("What did you mean?", "Help me become better");
-        strcpy(left->data, temp);
-
-        //input_name(left->data, DATA_LEN);
+        InputBox(left->data, "What did you mean?");
 
         strcpy(right->data, tree->data);
 
@@ -130,9 +89,8 @@ err running(Node* tree)
 
         sprintf(diff, "What different bitween %s and %s ?\n", left->data, right->data);
 
-        //input_qst(tree->data, DATA_LEN);
-        temp = (char*)txInputBox(diff, "Help me become better");
-        strcpy(tree->data, temp);
+        InputBox(tree->data, diff);
+        strcat(tree->data, "?");
 
         put_answer("You managed to defeat me.");
 
@@ -141,58 +99,11 @@ err running(Node* tree)
     return SUCCESS;
 }
 
-void input_qst(char* data, int data_len)
-{
-    int i = 0;
-    //getchar();
-    scanf("%c", data + i);
-
-    while((data[i] != '\n') && (i < data_len - 2))
-    {
-        i++;
-        scanf("%c", data + i);
-    }
-    data[i] = '\?';
-    i++;
-    data[i] = '\0';
-}
-
-void input_name(char* data, int data_len)
-{
-    int i = 0;
-    getchar();
-    scanf("%c", data + i);
-
-    while((data[i] != '\n') && (i < data_len - 1))
-    {
-        i++;
-        scanf("%c", data + i);
-    }
-    data[i] = '\0';
-
-}
-
-int check_answer ()
-{
-    RECT yes = { 100, 400, 200, 500 };
-    RECT no  = { 400, 400, 500, 500 };
-
-    while (txMouseButtons() != 1);
-
-    if (In (txMousePos(), yes))
-    {
-        while (txMouseButtons() != 0);
-        return 1;
-    }
-    else if (In (txMousePos(), no))
-    {
-        while (txMouseButtons() != 0);
-        return 0;
-    }
-}
-
 err fill_buffer (FILE* read, char** buf)
 {
+    CHECK_PTR(read);
+    CHECK_PTR(buf);
+
     int fsize = GetFileSize(read);
 
     CALLOC(*buf, char, (fsize + 2));
@@ -204,10 +115,13 @@ err fill_buffer (FILE* read, char** buf)
 
 err importTree (FILE* read, Node* tree)
 {
+    CHECK_PTR(read);
+    CHECK_PTR(tree);
+
     char* buf = 0;
     fill_buffer(read, &buf);
 
-    int level = 0, ptr = 0, i = 0;
+    int level = 0, ptr = 0;
 
     if (buf[ptr] == '(')
     {
@@ -220,7 +134,7 @@ err importTree (FILE* read, Node* tree)
     while (level > 0)
     {
         if (buf[ptr] == '(')
-        {                                                              // возможно падает из за редактирования базы
+        {
             ptr++;
 
             CHANGE_NODE(tree, tree->left);
@@ -233,9 +147,6 @@ err importTree (FILE* read, Node* tree)
             tree = tree->parent;
             level--;
             ptr++;
-
-           /* while (buf[ptr] != '(' && buf[ptr] != ')')
-                ptr += 1;*/
 
             if (buf[ptr] == '(' || ((buf[ptr + 1] == '(') && (buf[ptr] == '\n')) || ((buf[ptr + 2] == '(') && (buf[ptr + 1] == '\n') && (buf[ptr] == '\r')) )
             //if (isLR(buf, ptr))
@@ -274,6 +185,8 @@ void get_data(char* buf, int* ptr, Node* tree)
 
 err printTree (Node* head)
 {
+    CHECK_PTR(head);
+
     int tab = 0;
     return printTree__(head, &tab);
 }
@@ -309,6 +222,9 @@ err printTree__ (Node* head, int* tab)
 
 err fprintTree (FILE* out, Node* head)
 {
+    CHECK_PTR(out);
+    CHECK_PTR(head);
+
     int tab = 0;
     return fprintTree__(out, head, &tab);
 }
