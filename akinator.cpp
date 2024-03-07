@@ -11,6 +11,8 @@ int main()
 
     importTree(read, tree);
 
+    printf("Here\n");
+
     fclose(read);
 
     create_window ();
@@ -19,11 +21,11 @@ int main()
 
     printTree(tree);
 
-   /* FOPEN(out, "treeSave1.txt", "wb");
+    FOPEN(out, "treeSave1.txt", "wb");
 
     fprintTree(out, tree);
 
-    fclose(out);*/
+    fclose(out);
 
     treeKill(tree);
 }
@@ -146,6 +148,10 @@ err importTree (FILE* read, Node* tree)
         {
             tree = tree->parent;
             level--;
+
+            if (level == 0)
+                break;
+
             ptr++;
 
             goto_prace(buf, &ptr);
@@ -183,7 +189,6 @@ void get_data(char* buf, int* ptr, Node* tree)
         *ptr += 1;
         i++;
     }
-    i = 0;
 
     goto_prace(buf, ptr);
 }
