@@ -32,8 +32,8 @@ int main()
 
 char* make_question (char* data)
 {
-    char* question = (char*)calloc(DATA_LEN + 1, sizeof(char));
-    strcpy(question, "Was it ");
+    char* question = (char*)calloc(strlen(data) + strlen("Это  ?"), sizeof(char));
+    strcpy(question, "Это ");
     strcat(question, data);
     strcat(question, " ?");
 
@@ -60,12 +60,11 @@ err running(Node* tree)
 
     char* question = make_question(tree->data);
     put_answer (question);
-
     ans = check_answer();
 
     if (ans == YES)
     {
-        put_answer("\nI've always known about it.");
+        put_answer("От меня ничего не укроется");
         return SUCCESS;
     }
     else if (ans == NO)
@@ -82,19 +81,19 @@ err running(Node* tree)
         CALLOC(right->data, char, DATA_LEN + 1);
         CALLOC(left->data, char, DATA_LEN + 1);
 
-        InputBox(left->data, "What did you mean?", DATA_LEN);
+        InputBox(left->data, "Кого или что вы имели в виду?", DATA_LEN);
 
         strcpy(right->data, tree->data);
 
         char* what_different = 0;
-        CALLOC(what_different, char, (strlen("What different bitween  and  ?") + strlen(left->data) + strlen(right->data)));
+        CALLOC(what_different, char, (strlen("Чем  отличается от  ?") + strlen(left->data) + strlen(right->data)));
 
-        sprintf(what_different, "What different bitween %s and %s ?", left->data, right->data);
+        sprintf(what_different, "Чем %s отличается от %s ?", left->data, right->data);
 
         InputBox(tree->data, what_different, DATA_LEN);
         strcat(tree->data, "?");
 
-        put_answer("You managed to defeat me.");
+        put_answer("Вам удалось победить меня.");
 
     }
 

@@ -21,10 +21,10 @@ void create_window ()
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (YES_BUTTON);
-    txTextOut (300, 410, "Yes");
+    txTextOut (320, 410, "Да");
 
     txRectangle (NO_BUTTON);
-    txTextOut (620, 410, "No");
+    txTextOut (600, 410, "Нет");
 
     txDeleteDC (background_CopiedFromHelp);
 }
@@ -32,12 +32,12 @@ void create_window ()
 void put_answer (const char* data)
 {
     txSetFillColor (TX_BLUE);
-    txRectangle (300, 160, 700, 250);
+    txRectangle (280, 160, 720, 250);
     txFloodFill (400, 200);
 
     txSetColor (TX_WHITE);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(0, 150, 1000, 250, data);
+    txDrawText(280, 150, 720, 250, data);
 }
 
 enum answer check_answer ()
@@ -68,6 +68,6 @@ enum answer check_answer ()
 
 void InputBox (char* data, const char* message, int data_len)
 {
-    const char* temp = txInputBox(message, "Help me become better");
+    const char* temp = txInputBox(message, "Помогите мне стать лучше");
     strncpy(data, temp, data_len - 1);
 }
