@@ -11,21 +11,23 @@ int main()
 
     importTree(read, tree);
 
-    printf("Here\n");
-
     fclose(read);
 
-    create_window ();
+    /*create_window ();
+                                                                  // running test
+    running(tree);*/
 
-    running(tree);
+    //printTree(tree);
 
-    printTree(tree);
+    /*char* description = 0;
+    make_description (tree, "Леша", &description);                // descriptor test
+    printf("%s", description);*/
 
-    FOPEN(out, "treeSave1.txt", "wb");
+    /*FOPEN(out, "treeSave1.txt", "wb");
 
     fprintTree(out, tree);
 
-    fclose(out);
+    fclose(out);*/
 
     treeKill(tree);
 }
@@ -38,6 +40,63 @@ char* make_question (char* data)
     strcat(question, " ?");
 
     return question;
+}
+
+err make_description (Node* tree, const char* obj, char** description)
+{
+    CHECK_PTR(tree);
+    CHECK_PTR(obj);
+
+    Stack stk = {};
+    stack_ctor(&stk, 1);
+
+    int found = 0;
+    err res = Search(tree, obj, &stk, &found);
+
+    if (res == SUCCESS)
+    {
+        int descr_size = 0;
+
+        for (size_t i = 0; i < stk.size; i++)
+            descr_size += strlen(stk.data[i]);
+
+        CALLOC(*(description), char, descr_size);
+
+        for (size_t i = 0; i < stk.size; i++)
+            strcat(*(description), stk.data[i]);
+
+        for (int i = 0; i < descr_size; i++)
+            if ((*description)[i] == '?')
+                (*description)[i] = ' ';
+    }
+    stack_dtor(&stk);
+    return res;
+}
+
+err Search (Node* tree, const char* obj, Stack* stk, int* found)
+{
+    if (tree->left != NULL)
+    {
+        stack_push(stk, &(tree->data));
+        Search(tree->left, obj, stk, found);
+        if (*found == 1)
+            return SUCCESS;
+        stack_pop(stk, NULL);
+    }
+
+    if (tree->right != NULL)
+    {
+        Search(tree->right, obj, stk, found);
+        if (*found == 1)
+            return SUCCESS;
+    }
+
+    if (strcmp(tree->data, obj) == 0)
+    {
+        *found = 1;
+        return SUCCESS;
+    }
+    return FAIL;
 }
 
 err running(Node* tree)

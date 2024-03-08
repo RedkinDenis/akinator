@@ -6,6 +6,7 @@
 #include <string.h>
 #include "input_output.h"
 #include "interface.h"
+#include "stack.h"
 #include "C:\Users\vp717\Desktop\ilab\err_codes.h"
 #include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
 #include <conio.h>
@@ -61,5 +62,9 @@ err fill_buffer (FILE* read, char** buf);
 void get_data (char* buf, int* ptr, Node* tree);
 
 void goto_prace (char* buf, int* ptr);
+
+err make_description (Node* tree, const char* obj, char** description);
+
+err Search (Node* tree, const char* obj, Stack* stk, int* found);
 
 #endif //AKINATOR_H
