@@ -140,3 +140,4 @@ void input_name(char* data, int data_len)
     }
     data[i] = '\0';
 }
+

@@ -10,6 +10,8 @@
 #include "C:\Users\vp717\Desktop\ilab\err_codes.h"
 #include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
 #include <conio.h>
+#include <ctype.h>
+#include "..\TXLib.h"
 
 
 #include <windows.h>
@@ -35,19 +37,19 @@ struct Node
     Node* left = NULL;
     Node* right = NULL;
     Node* parent = NULL;
+
+    int num_in_tree = 0;
 };
 
 char* make_question (char* data);
 
-err running(Node* tree);
+err running(Node* tree, int* run);
+
+err draw_tree (Node* tree);
 
 err printTree (Node* head);
 
-err printTree__ (Node* head, int* tab);
-
 err fprintTree (FILE* out, Node* head);
-
-err fprintTree__ (FILE* out, Node* head, int* tab);
 
 err treeKill (Node* head);
 
@@ -59,12 +61,10 @@ err importTree (FILE* read ,Node* head);
 
 err fill_buffer (FILE* read, char** buf);
 
-void get_data (char* buf, int* ptr, Node* tree);
+void get_data (char* buf, int* ptr, Node* tree, int data_len);
 
 void goto_prace (char* buf, int* ptr);
 
 err make_description (Node* tree, const char* obj, char** description);
-
-err Search (Node* tree, const char* obj, Stack* stk, int* found);
 
 #endif //AKINATOR_H
