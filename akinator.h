@@ -7,6 +7,13 @@
 
 typedef char* data_t;
 
+enum sub_tree
+{
+    right = 0,
+    left = 1,
+    Default = 2
+};
+
 struct Node
 {
     data_t data = 0;
@@ -15,6 +22,7 @@ struct Node
     Node* parent = NULL;
 
     int num_in_tree = 0;
+    sub_tree st = Default;
 };
 
 typedef struct Node* elem_t;

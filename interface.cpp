@@ -224,8 +224,12 @@ void put_answer (const char* data, wizard mood)
     int wide_coeff = 0;
     if (data_len < 10)
         wide_coeff = 10;
-    else
+    else if (data_len < 20)
         wide_coeff = 9;
+    else if (data_len < 30)
+        wide_coeff = 8;
+    else
+        wide_coeff = 7;
 
     txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);

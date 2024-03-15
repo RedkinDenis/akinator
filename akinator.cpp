@@ -21,12 +21,6 @@
     }                                \
     } while(0)
 
-enum sub_tree
-{
-    right = 0,
-    left = 0
-};
-
 static char* make_question (char* data);
 
 static err running(Node* tree, int* run);
@@ -49,9 +43,11 @@ static err make_description (Node* tree, const char* obj, char** description);
 
 static err make_description__ (Node* tree, const char* obj, Stack* stk, int* found);
 
-static void other_subtree (Node** tree, Stack* stk, sub_tree* mode);
+static void split_str (char** description);
 
-static void choose_subtree (Node** tree, Stack* stk, sub_tree* mode);
+static void other_subtree (Node** tree, Stack* stk);
+
+static void choose_subtree (Node** tree, Stack* stk);
 
 int main()
 {
@@ -128,8 +124,6 @@ err run_guess (Node* tree, int* run)
 
     answer ans = ERR;
 
-    sub_tree mode = left;
-
     while (tree->right != NULL && tree->left != NULL)
     {
         put_question (tree->data, THINKING);
@@ -145,7 +139,7 @@ err run_guess (Node* tree, int* run)
             tree = tree->right;
 
         else if (ans == SKIP)
-            choose_subtree(&tree, &dont_know, &mode);
+            choose_subtree(&tree, &dont_know);
 
         if (tree->right == NULL && tree->left == NULL)
         {
@@ -162,7 +156,7 @@ err run_guess (Node* tree, int* run)
             else if (ans == NO)
             {
                 if (dont_know.size > 0)
-                    other_subtree(&tree, &dont_know, &mode);
+                    other_subtree(&tree, &dont_know);
 
                 else
                 {
@@ -300,36 +294,37 @@ err get_info (Node* tree, char** left_buf, char** parent_buf)
     return SUCCESS;
 }
 
-void other_subtree (Node** tree, Stack* stk, sub_tree* mode)
+void other_subtree (Node** tree, Stack* stk)
 {
     stack_pop(stk, tree);
 
-    if (*mode == left)
+    if ((*tree)->st == left)
     {
         *tree = (*tree)->right;
-        *mode = right;
     }
     else
     {
         *tree = (*tree)->left;
-        *mode = left;
     }
     return;
 }
 
-void choose_subtree (Node** tree, Stack* stk, sub_tree* mode)
+void choose_subtree (Node** tree, Stack* stk)
 {
+    if (rand() % 2 == 0)
+        (*tree)->st = left;
+    else
+        (*tree)->st = right;
+
     stack_push(stk, tree);
 
-    if (*mode == left)
+    if ((*tree)->st == left)
     {
         *tree = (*tree)->left;
-        *mode = right;
     }
     else
     {
         *tree = (*tree)->right;
-        *mode = left;
     }
     return;
 }
@@ -387,6 +382,8 @@ err make_description (Node* tree, const char* obj, char** description)
         strcpy(*description, descr_temp);
     }
 
+    split_str(description);
+
     stack_dtor(&stk);
     return res;
 }
@@ -417,3 +414,20 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
     return FAIL;
 }
 
+void split_str (char** description)
+{
+    int line_len = 40;
+
+    int ds_len = (int)strlen(*description);
+    int lines = ds_len / line_len + 1;
+    char* ptr = 0;
+
+    for (int l = 1; l < lines; l++)
+    {
+        ptr = *description + (l * line_len);
+        while (*ptr != ' ')
+            ptr--;
+        *ptr = '\n';
+    }
+    return;
+}
