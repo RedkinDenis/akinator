@@ -1,6 +1,16 @@
 #include "stack.h"
 
-err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* file_name, const char* func_name)
+#include <string.h>
+#include <stdio.h>
+#include <malloc.h>
+#include <assert.h>
+#include "UDL.h"
+
+static err capacity_down(struct Stack* stk);
+
+static err capacity_up(struct Stack* stk);
+
+/*err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* file_name, const char* func_name)
 {
     CHECK_PTR(stk);
     CHECK_PTR(stk_name);
@@ -25,6 +35,7 @@ err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* fi
 
     return SUCCESS;
 }
+*/
 
 err stack_ctor(struct Stack* stk, size_t capacity)
 {
@@ -33,7 +44,6 @@ err stack_ctor(struct Stack* stk, size_t capacity)
     if(stk->capacity != 0 && stk->capacity != (size_t)-1)
         return STACK_ALREDY_CREATED;
 
-    void* temp = 0;
     CALLOC(stk->data, elem_t, capacity);
 
     stk->capacity = capacity;

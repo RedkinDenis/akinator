@@ -1,15 +1,57 @@
 #include "akinator.h"
 
-static err printTree__ (Node* head, int* tab);
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "input_output.h"
+#include "interface.h"
+#include "..\err_codes.h"
+#include "UDL.h"
+#include "stack.h"
+
+#define CHECK_FOR_CLOSE(ans, run)    \
+    do                               \
+    {                                \
+    if (ans == CLOSE)                \
+    {                                \
+        *run = 0;                    \
+        return SUCCESS;              \
+    }                                \
+    } while(0)
+
+enum sub_tree
+{
+    right = 0,
+    left = 0
+};
+
+static char* make_question (char* data);
+
+static err running(Node* tree, int* run);
+
+static err run_describe (Node* tree);
+
+static err run_guess (Node* tree, int* run);
+
+static err add_node (Node* tree);
+
+static err get_info (Node* tree, char** left_buf, char** parent_buf);
+
+static err treeKill (Node* head);
+
+static err deleteNode (Node* head);
+
+static err treeSearch (Node* head, data_t srch, Node** return_t);
+
+static err make_description (Node* tree, const char* obj, char** description);
 
 static err make_description__ (Node* tree, const char* obj, Stack* stk, int* found);
 
-static err fprintTree__ (FILE* out, Node* head, int* tab);
+static void other_subtree (Node** tree, Stack* stk, sub_tree* mode);
 
-static void draw_tree_1 (FILE* save, Node* tree, int* node_num);
-
-static void draw_tree_2 (FILE* save, Node* tree);
-
+static void choose_subtree (Node** tree, Stack* stk, sub_tree* mode);
 
 int main()
 {
@@ -36,80 +78,152 @@ int main()
 
     fprintTree(out, tree);
 
-    fclose(out);*/
+    fclose(out);
+*/
 
     treeKill(tree);
 }
 
-err draw_tree (Node* tree)
+err running(Node* tree, int* run)
 {
-    FOPEN(save, "drawTree.txt", "wb");
+    answer ans = ERR;
 
-    fprintf(save, "digraph List {\n");
+    fill_window(BASE);
+    draw_mode_bt();
+    ans = choose_mode();
 
-    int node_num = 0;
-    draw_tree_1(save, tree, &node_num);
-    draw_tree_2(save, tree);
+    CHECK_FOR_CLOSE (ans, run);
 
-    fprintf(save, "}");
+    if (ans == GUESS)
+    {
+        run_guess(tree, run);
+        if (*run == 0)
+            return SUCCESS;
+    }
 
-    fclose(save);
+    else if (ans == DESCR)
+        run_describe(tree);
 
-    system("iconv -f WINDOWS-1251 -t UTF-8 drawTree.txt > buffer.txt");
-    system("dot buffer.txt -Tpng -o drawTree.png");
-    system("start drawTree.png");
+    else if (ans == SHOW)
+        draw_tree(tree);
+
+    put_question((char*)"Играть снова?", BASE);
+    ans = check_answer(YN);
+
+    if (ans == NO)
+    {
+        put_answer("Спасибо за игру!", BASE);
+        *run = 0;
+    }
+
+    CHECK_FOR_CLOSE (ans, run);
+
     return SUCCESS;
 }
 
-void draw_tree_1 (FILE* save, Node* tree, int* node_num)
+err run_guess (Node* tree, int* run)
 {
-    char* buffer = (char*)calloc(strlen(tree->data) + 3, sizeof(char));
-    buffer[0] = '"';
-    strcat(buffer, tree->data);
-    buffer[strlen(tree->data) + 1] = '"';
+    Stack dont_know = {};
+    stack_ctor(&dont_know, 1);
 
-    tree->num_in_tree = *node_num;
+    answer ans = ERR;
 
-    fprintf(save, "    %d [shape = Mrecord, style = filled, fillcolor = red, label = %s ];\n", *node_num, buffer);
+    sub_tree mode = left;
 
-    if (tree->right == NULL && tree->left == NULL)
-        fprintf(save, "    %d [shape = Mrecord, style = filled, fillcolor = cyan, label = %s ];\n", *node_num, buffer);
-    else
-        fprintf(save, "    %d [shape = Mrecord, style = filled, fillcolor = lightgoldenrod1, label = %s ];\n", *node_num, buffer);
-
-
-    if (tree->left != NULL)
+    while (tree->right != NULL && tree->left != NULL)
     {
-        *node_num += 1;
-        draw_tree_1(save, tree->left, node_num);
-    }
+        put_question (tree->data, THINKING);
 
-    if (tree->right != NULL)
-    {
-        *node_num += 1;
-        draw_tree_1(save, tree->right, node_num);
-    }
+        ans = check_answer(YNDN);
 
-    return;
+        CHECK_FOR_CLOSE (ans, run);
+
+        if (ans == YES)
+            tree = tree->left;
+
+        else if (ans == NO)
+            tree = tree->right;
+
+        else if (ans == SKIP)
+            choose_subtree(&tree, &dont_know, &mode);
+
+        if (tree->right == NULL && tree->left == NULL)
+        {
+            char* question = make_question(tree->data);
+            put_question (question, UNDERSTAND);
+            free(question);
+
+            ans = check_answer(YN);
+            CHECK_FOR_CLOSE (ans, run);
+
+            if (ans == YES)
+                put_answer("От меня ничего не укроется", PROUD);
+
+            else if (ans == NO)
+            {
+                if (dont_know.size > 0)
+                    other_subtree(&tree, &dont_know, &mode);
+
+                else
+                {
+                    stack_dtor(&dont_know);
+
+                    err res = add_node(tree);
+
+                    if (res == FAIL)
+                        return SUCCESS;
+
+                    put_answer("Вам удалось победить меня.", CONFUSED);
+
+                    break;
+                }
+            }
+        }
+    }
+    mySleep(5000);
+    return SUCCESS;
 }
 
-void draw_tree_2 (FILE* save, Node* tree)
+err run_describe (Node* tree)
 {
-    if (tree->left != NULL)
+    char* description = 0;
+    char* srch = 0;
+    CALLOC(srch, char, DATA_LEN);
+
+    //txWaveData_t tam_blya = txWaveLoadWav ("description.wav");
+
+    answer ans = InputBox(srch, "Чье описание вы хотите получить ?\n( Пожалуйста, вводите в именительном падеже )", DATA_LEN);
+    if (ans == ERR)
     {
-        fprintf(save, "    %d -> %d [ color=green label=Да fontcolor=green ];\n", tree->num_in_tree, (tree->left)->num_in_tree);
-        draw_tree_2(save, tree->left);
+        free(srch);
+        return FAIL;
     }
 
-    if (tree->right != NULL)
-    {
-        fprintf(save, "    %d -> %d [ color=red label=Нет fontcolor=red ];\n", tree->num_in_tree, (tree->right)->num_in_tree);
-        draw_tree_2(save, tree->right);
-    }
+    make_description (tree, srch, &description);
+    put_answer(description, UNDERSTAND);
 
-    return;
+    //txWaveOut (tam_blya);
+
+    free(description);
+    free(srch);
+    mySleep(5000);
+
+    return SUCCESS;
 }
 
+err treeKill (Node* head)
+{
+    CHECK_PTR(head);
+
+    if (head->left != NULL)
+        treeKill(head->left);
+
+    if (head->right != NULL)
+        treeKill(head->right);
+
+    free(head);
+    return SUCCESS;
+}
 
 char* make_question (char* data)
 {
@@ -119,6 +233,105 @@ char* make_question (char* data)
     strcat(question, " ?");
 
     return question;
+}
+
+err add_node (Node* tree)
+{
+    char* left_buf = 0;
+    char* parent_buf = 0;
+
+    err res = get_info(tree, &left_buf, &parent_buf);
+    if (res != SUCCESS)
+        return res;
+
+    CALLOC(tree->right, Node, 1);
+    CALLOC(tree->left, Node, 1);
+
+    Node* right = tree->right;
+    Node* left = tree->left;
+
+    right->parent = tree;
+    left->parent = tree;
+
+    CALLOC(right->data, char, DATA_LEN + 1);
+    CALLOC(left->data, char, DATA_LEN + 1);
+
+    strcpy(left->data, left_buf);
+
+    strcpy(right->data, tree->data);
+
+    strcpy(tree->data, parent_buf);
+
+    free(left_buf);
+    free(parent_buf);
+
+    return SUCCESS;
+}
+
+err get_info (Node* tree, char** left_buf, char** parent_buf)
+{
+    answer ans = ERR;
+
+    CALLOC(*left_buf, char, DATA_LEN + 1);
+
+    ans = InputBox(*left_buf, "Кого или что вы имели в виду?", DATA_LEN);
+    if (ans == ERR)
+    {
+        free(*left_buf);
+        return FAIL;
+    }
+
+    char* what_different = 0;
+    CALLOC(what_different, char, (strlen("Чем  отличается от  ?") + strlen(*left_buf) + strlen(tree->data)));
+    sprintf(what_different, "Чем %s отличается от %s ?", *left_buf, tree->data);
+
+    CALLOC(*parent_buf, char, DATA_LEN + 1);
+
+    ans = InputBox(*parent_buf, what_different, DATA_LEN);
+    if (ans == ERR)
+    {
+        free(*parent_buf);
+        free(*left_buf);
+        return FAIL;
+    }
+
+    strcat(*parent_buf, "?");
+
+    return SUCCESS;
+}
+
+void other_subtree (Node** tree, Stack* stk, sub_tree* mode)
+{
+    stack_pop(stk, tree);
+
+    if (*mode == left)
+    {
+        *tree = (*tree)->right;
+        *mode = right;
+    }
+    else
+    {
+        *tree = (*tree)->left;
+        *mode = left;
+    }
+    return;
+}
+
+void choose_subtree (Node** tree, Stack* stk, sub_tree* mode)
+{
+    stack_push(stk, tree);
+
+    if (*mode == left)
+    {
+        *tree = (*tree)->left;
+        *mode = right;
+    }
+    else
+    {
+        *tree = (*tree)->right;
+        *mode = left;
+    }
+    return;
 }
 
 err make_description (Node* tree, const char* obj, char** description)
@@ -137,13 +350,13 @@ err make_description (Node* tree, const char* obj, char** description)
         int descr_size = 0;
 
         for (size_t i = 0; i < stk.size; i++)
-            descr_size += (strlen(stk.data[i]) + 1);
+            descr_size += ((int)strlen(stk.data[i]->data) + 1);
 
         CALLOC(*(description), char, descr_size);
 
         for (size_t i = 0; i < stk.size; i++)
         {
-            strcat(*(description), stk.data[i]);
+            strcat(*(description), stk.data[i]->data);
 
             if (i == (stk.size - 2))
                 strcat(*(description), "и");
@@ -182,7 +395,7 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
 {
     if (tree->left != NULL)
     {
-        stack_push(stk, &(tree->data));
+        stack_push(stk, &tree);
         make_description__(tree->left, obj, stk, found);
         if (*found == 1)
             return SUCCESS;
@@ -202,294 +415,5 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
         return SUCCESS;
     }
     return FAIL;
-}
-
-err running(Node* tree, int* run)
-{
-    answer ans = ERR;
-
-    fill_window();
-    draw_mode_bt();
-    ans = choose_mode();
-
-    if (ans == GUESS)
-    {
-        while(tree->right != NULL && tree->left != NULL)
-        {
-            put_question (tree->data);
-
-            ans = check_answer();
-
-            if (ans == YES)
-                tree = tree->left;
-            else if (ans == NO)
-                tree = tree->right;
-        }
-
-        char* question = make_question(tree->data);
-        put_question (question);
-        ans = check_answer();
-
-        if (ans == YES)
-            put_answer("От меня ничего не укроется");
-
-        else if (ans == NO)
-        {
-            char* parent_buf = 0;
-            char* left_buf = 0;
-            CALLOC(parent_buf, char, DATA_LEN + 1);
-            CALLOC(left_buf, char, DATA_LEN + 1);
-
-            ans = InputBox(left_buf, "Кого или что вы имели в виду?", DATA_LEN);
-            if (ans == ERR)
-                goto END;
-
-            char* what_different = 0;
-            CALLOC(what_different, char, (strlen("Чем  отличается от  ?") + strlen(left_buf) + strlen(tree->data)));
-
-            sprintf(what_different, "Чем %s отличается от %s ?", left_buf, tree->data);
-
-            InputBox(parent_buf, what_different, DATA_LEN);
-            if (ans == ERR)
-                goto END;
-
-            strcat(parent_buf, "?");
-
-            CALLOC(tree->right, Node, 1);
-            CALLOC(tree->left, Node, 1);
-
-            Node* right = tree->right;
-            Node* left = tree->left;
-
-            right->parent = tree;
-            left->parent = tree;
-
-            CALLOC(right->data, char, DATA_LEN + 1);
-            CALLOC(left->data, char, DATA_LEN + 1);
-
-            strcpy(left->data, left_buf);
-
-            strcpy(right->data, tree->data);
-
-            strcpy(tree->data, parent_buf);
-
-            put_answer("Вам удалось победить меня.");
-        }
-        Sleep(3000);
-    }
-
-    else if (ans == DESCR)
-    {
-        char* description = 0;
-        char* srch = 0;
-        CALLOC(srch, char, DATA_LEN);
-
-        InputBox(srch, "Чье описание вы хотите получить ?\n( Пожалуйста, вводите в именительном падеже )", DATA_LEN);
-        if (ans == ERR)
-            goto END;
-
-        make_description (tree, srch, &description);
-        put_answer(description);
-        Sleep(5000);
-    }
-
-    else if (ans == REVIEW)
-        draw_tree(tree);
-
-END:
-    put_question("Играть снова?");
-    ans = check_answer();
-
-    if (ans == YES)
-        *run = 1;
-
-    else if (ans == NO)
-    {
-        put_answer("Спасибо за игру!");
-        *run = 0;
-    }
-
-    return SUCCESS;
-}
-
-err fill_buffer (FILE* read, char** buf)
-{
-    CHECK_PTR(read);
-    CHECK_PTR(buf);
-
-    int fsize = GetFileSize(read);
-
-    CALLOC(*buf, char, (fsize + 2));
-
-    fread(*buf, sizeof(char), fsize, read);
-
-    return SUCCESS;
-}
-
-err importTree (FILE* read, Node* tree)
-{
-    CHECK_PTR(read);
-    CHECK_PTR(tree);
-
-    char* buf = 0;
-    fill_buffer(read, &buf);
-
-    int level = 0, ptr = 0;
-
-    if (buf[ptr] == '(')
-    {
-        ptr++;
-        level++;
-
-        get_data(buf, &ptr, tree, DATA_LEN);
-    }
-
-    while (level > 0)
-    {
-        if (buf[ptr] == '(')
-        {
-            ptr++;
-
-            CHANGE_NODE(tree, tree->left);
-            CALLOC(tree->data, char, DATA_LEN + 1);
-
-            get_data(buf, &ptr, tree, DATA_LEN);
-        }
-        else if (buf[ptr] == ')')
-        {
-            tree = tree->parent;
-            level--;
-
-            if (level == 0)
-                break;
-
-            ptr++;
-
-            goto_prace(buf, &ptr);
-
-            if (buf[ptr] == '(')
-            {
-                ptr++;
-
-                CHANGE_NODE(tree, tree->right);
-                CALLOC(tree->data, char, DATA_LEN + 1);
-
-                get_data(buf, &ptr, tree, DATA_LEN);
-            }
-        }
-    }
-
-    return SUCCESS;
-}
-
-void goto_prace (char* buf, int* ptr)
-{
-    while((buf[*ptr] != '(') && (buf[*ptr] != ')'))
-        *ptr += 1;
-}
-
-void get_data(char* buf, int* ptr, Node* tree, int data_len)
-{
-    int i = 0;
-    while (buf[*ptr - 1] != '*')
-        *ptr += 1;
-
-    while ((buf[*ptr] != '*') && i <= data_len)
-    {
-        tree->data[i] = buf[*ptr];
-        *ptr += 1;
-        i++;
-    }
-
-    goto_prace(buf, ptr);
-}
-
-err printTree (Node* head)
-{
-    CHECK_PTR(head);
-
-    int tab = 0;
-    return printTree__(head, &tab);
-}
-
-err printTree__ (Node* head, int* tab)
-{
-    CHECK_PTR(head);
-
-    printf("(");
-    for(int i = 0; i < *tab; i++)
-        printf("    ");
-
-    printf("*%s*", head->data);
-
-    if (head->left != NULL)
-    {
-        *tab += 1;
-        printf("\n");
-        printTree__(head->left, tab);
-    }
-
-    if (head->right != NULL)
-    {
-        printf("\n");
-        printTree__(head->right, tab);
-        *tab -= 1;
-    }
-
-    printf(")");
-
-    return SUCCESS;
-}
-
-err fprintTree (FILE* out, Node* head)
-{
-    CHECK_PTR(out);
-    CHECK_PTR(head);
-
-    int tab = 0;
-    return fprintTree__(out, head, &tab);
-}
-
-err fprintTree__ (FILE* out, Node* head, int* tab)
-{
-    CHECK_PTR(head);
-
-    fprintf(out, "(");
-    for(int i = 0; i < *tab; i++)
-        fprintf(out, "    ");
-
-    fprintf(out, "*%s*", head->data);
-
-    if (head->left != NULL)
-    {
-        *tab += 1;
-        fprintf(out, "\n");
-        fprintTree__(out, head->left, tab);
-    }
-
-    if (head->right != NULL)
-    {
-        fprintf(out, "\n");
-        fprintTree__(out, head->right, tab);
-        *tab -= 1;
-    }
-
-    fprintf(out, ")");
-
-    return SUCCESS;
-}
-
-err treeKill (Node* head)
-{
-    CHECK_PTR(head);
-
-    if (head->left != NULL)
-        treeKill(head->left);
-
-    if (head->right != NULL)
-        treeKill(head->right);
-
-    free(head);
-    return SUCCESS;
 }
 

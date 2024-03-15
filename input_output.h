@@ -1,34 +1,23 @@
 #ifndef INPUT_OTPUT_H
 #define INPUT_OTPUT_H
 
-struct line
-{
-    size_t len;
-    char* str;
-};
-
-struct file
-{
-    char* buffer;
-    struct line* lines;
-    int nLines = 0;
-};
-
-void clear_tabs(struct line* data, int nLines);
+#include "akinator.h"
+#include "UDL.h"
+#include "..\err_codes.h"
 
 void input_name (char* data, int data_len);
 
 void input_qst (char* data, int data_len);
 
-void DataFree(struct file* data);
-
 int GetFileSize(FILE* fp);
 
-struct line* InputData(struct file* data, FILE* fp, int fsize);
+err draw_tree (Node* tree);
 
-void PrintData(struct line* data, int data_size);
+err printTree (Node* head);
 
-void DataOut(FILE* fp, struct line* data, int nLines);
+err fprintTree (FILE* out, Node* head);
+
+err importTree (FILE* read ,Node* head);
 
 #endif // INPUT_OTPUT_H
 

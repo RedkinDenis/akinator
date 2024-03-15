@@ -1,100 +1,194 @@
 #include "interface.h"
 
-#define YES_BUTTON 250, 400, 450, 500
+#define  TX_USE_SPEAK
+#include "..\TXLib.h"
 
-#define GUESS_BUTTON 250, 410, 450, 490
+#include "TXWave.h"
+#include <time.h>
 
-#define DESCR_BUTTON 550, 410, 750, 490
+#define YES_BUTTON txGetExtentX() / 2 - 250, txGetExtentY() * 6 / 10, txGetExtentX() / 2 - 50, txGetExtentY() * 6 / 10 + 100
 
-#define NO_BUTTON 550, 400, 750, 500
+#define NO_BUTTON txGetExtentX() / 2 + 50, txGetExtentY() * 6 / 10, txGetExtentX() / 2 + 250, txGetExtentY() * 6 / 10 + 100
 
-#define SHOW_BUTTON 350, 280, 650, 360
+#define SKIP_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() * 3 / 4, txGetExtentX() / 2 + 150, txGetExtentY() * 3 / 4 + 80
+
+#define GUESS_BUTTON txGetExtentX() / 2 - 250, txGetExtentY() * 7 / 10, txGetExtentX() / 2 - 50, txGetExtentY() * 7 / 10 + 100
+
+#define DESCR_BUTTON txGetExtentX() / 2 + 50, txGetExtentY() * 7 / 10, txGetExtentX() / 2 + 250, txGetExtentY() * 7 / 10 + 100
+
+#define SHOW_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() / 2, txGetExtentX() / 2 + 150, txGetExtentY() / 2 + 80
+
+#define CLOSE_BUTTON txGetExtentX() - 50, 0, txGetExtentX(), 37
+
+struct BUTTON_
+{
+    int x1 = 0;
+    int y1 = 0;
+    int x2 = 0;
+    int y2 = 0;
+};
+
+static void draw_YN_bt ();
+
+static void draw_DN_bt ();
+
+static void say (void* data);
+
+static int mouse_in (BUTTON_* bt);
+
+void mySleep (int time)
+{
+    txSleep(time);
+}
 
 void create_window ()
 {
     _txConsole = -1;
 
-    txCreateWindow (1000, 550);
+    txCreateWindow (1520, 780);
 }
 
-void fill_window ()
+void fill_window (wizard mood)
 {
-    HDC background_CopiedFromHelp = txLoadImage ("background.bmp");
+    HDC background = txLoadImage ("background.bmp");
 
-    //HDC wizard = txLoadImage ("wizard.bmp");
+    const char* wizard_type = 0;
 
-    if (!background_CopiedFromHelp)
-      txMessageBox ("Не могу загрузить фон из background.bmp");
+    if (mood == UNDERSTAND)
+        wizard_type = "understanding_wizard.bmp";
 
-    txBitBlt (txDC(), 0, 0, 1000, 550, background_CopiedFromHelp, 0, 0);
+    else if (mood == THINKING)
+        wizard_type = "thinking_wizard.bmp";
 
-    //txTransparentBlt (txDC(), 400, 0, 100, 100, wizard, 300, 100);
+    else if (mood == BASE)
+        wizard_type = "base_wizard.bmp";
 
-    txDeleteDC (background_CopiedFromHelp);
+    else if (mood == CONFUSED)
+        wizard_type = "confused_wizard.bmp";
+
+    else if (mood == PROUD)
+        wizard_type = "proud_wizard.bmp";
+
+    HDC wizard = txLoadImage (wizard_type);
+
+    HDC Close = txLoadImage ("close.bmp");
+
+    txBitBlt (txDC(), 0, 0, txGetExtentX(), txGetExtentY(), background, 0, 0);
+
+    txTransparentBlt (txDC(), 0, 0, 0, 0, wizard, 0, 0);
+
+    BUTTON_ close = { CLOSE_BUTTON };
+    txTransparentBlt (txDC(), close.x1, 0, 0, 0, Close, 0, 0);
+
+    txDeleteDC (background);
 }
 
 void draw_YN_bt ()
 {
+    BUTTON_ yes = { YES_BUTTON };
+    BUTTON_ no  = { NO_BUTTON };
+
     txSetFillColor (TX_ORANGE);
 
     txSetColor (TX_RED);
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (YES_BUTTON);
-    txTextOut (320, 410, "Да");
+    txTextOut (yes.x1 + 60, yes.y1 + 10, "Да");
 
     txRectangle (NO_BUTTON);
-    txTextOut (600, 410, "Нет");
+    txTextOut (no.x1 + 50, no.y1 + 10, "Нет");
+}
+
+void draw_DN_bt ()
+{
+    BUTTON_ skip = { SKIP_BUTTON };
+
+    txSetFillColor (TX_ORANGE);
+
+    txSetColor (TX_RED);
+    txSelectFont ("Times New Roman", 80);
+
+    txRectangle (SKIP_BUTTON);
+    txTextOut (skip.x1 + 30, skip.y1 + 5, "Не знаю");
 }
 
 void draw_mode_bt ()
 {
+    BUTTON_ guess = { GUESS_BUTTON };
+    BUTTON_ describe = { DESCR_BUTTON };
+    BUTTON_ show = { SHOW_BUTTON };
+
     txSetFillColor (TX_ORANGE);
 
     txSetColor (TX_RED);
     txSelectFont ("Times New Roman", 60);
 
     txRectangle (GUESS_BUTTON);
-    txTextOut (260, 415, "Отгадать");
+    txTextOut (guess.x1 + 10, guess.y1 + 15, "Отгадать");
 
     txRectangle (DESCR_BUTTON);
-    txTextOut (560, 415, "Описать");
+    txTextOut (describe.x1 + 10, describe.y1 + 15, "Описать");
 
     txRectangle (SHOW_BUTTON);
-    txTextOut (370, 285, "Выдать базу");
+    txTextOut (show.x1 + 25, show.y1 + 10, "Выдать базу");
 }
 
-void put_question (const char* data)
+void say (void* data)
 {
+    txSpeak("%s", (const char*)data);
+}
+
+void put_question (char* data, wizard mood)
+{
+    _beginthread (say, 0, data);
+
     txClear();
-    fill_window();
+    fill_window(mood);
     draw_YN_bt();
 
     txSetFillColor (TX_BLUE);
 
-    size_t data_len = strlen(data);
+    int data_len = (int)strlen(data);
     int wide_coeff = 0;
     if (data_len < 10)
         wide_coeff = 10;
     else
         wide_coeff = 9;
 
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, 160, txGetExtentX() / 2 + data_len * wide_coeff, 250);
-    txFloodFill (400, 200);
+    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
+    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
 
     txSetColor (TX_WHITE);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, 150, txGetExtentX() / 2 + data_len * wide_coeff, 250, data);
+    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
 }
 
-enum answer check_answer ()
+enum answer check_answer (ans_mode mode)
 {
     BUTTON_ yes = { YES_BUTTON };
     BUTTON_ no  = { NO_BUTTON };
+    BUTTON_ close = { CLOSE_BUTTON };
 
+    BUTTON_ skip  = { SKIP_BUTTON };
+
+    if (mode == YNDN)
+        draw_DN_bt();
+
+    txWaveData_t shlepa = txWaveLoadWav ("shlepa.wav");
+
+    time_t start = time(NULL);
     while(1)
     {
-        while (txMouseButtons() != 1);
+        while (txMouseButtons() != 1)
+        {
+            if ((time(NULL) - start) == 10)
+            {
+                //txWaveOut (shlepa);
+                start = time(NULL);
+            }
+        }
+
         if (mouse_in(&yes))
         {
             while (txMouseButtons() != 0);
@@ -105,40 +199,51 @@ enum answer check_answer ()
             while (txMouseButtons() != 0);
             return NO;
         }
+        else if (mode == YNDN && mouse_in(&skip))
+        {
+            while (txMouseButtons() != 0);
+            return SKIP;
+        }
+        else if (mouse_in(&close))
+        {
+            while (txMouseButtons() != 0);
+            return CLOSE;
+        }
     }
     return ERR;
 }
 
-void put_answer (const char* data)
+void put_answer (const char* data, wizard mood)
 {
     txClear();
-    fill_window();
+    fill_window(mood);
 
     txSetFillColor (TX_BLUE);
 
-    size_t data_len = strlen(data);
+    int data_len = (int)strlen(data);
     int wide_coeff = 0;
     if (data_len < 10)
         wide_coeff = 10;
     else
         wide_coeff = 9;
 
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, 160, txGetExtentX() / 2 + data_len * wide_coeff, 250);
-    txFloodFill (400, 200);
+    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
+    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
 
     txSetColor (TX_WHITE);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, 150, txGetExtentX() / 2 + data_len * wide_coeff, 250, data);
+    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
 }
 
 enum answer choose_mode ()
 {
-    put_answer("Выберите режим:");
+    put_answer("Выберите режим:", BASE);
     draw_mode_bt();
 
     BUTTON_ guess = { GUESS_BUTTON };
     BUTTON_ describe = { DESCR_BUTTON };
-    BUTTON_ review = { SHOW_BUTTON };
+    BUTTON_ show = { SHOW_BUTTON };
+    BUTTON_ close = { CLOSE_BUTTON };
 
     while(1)
     {
@@ -153,10 +258,15 @@ enum answer choose_mode ()
             while (txMouseButtons() != 0);
             return DESCR;
         }
-        else if (mouse_in(&review))
+        else if (mouse_in(&show))
         {
             while (txMouseButtons() != 0);
-            return REVIEW;
+            return SHOW;
+        }
+        else if (mouse_in(&close))
+        {
+            while (txMouseButtons() != 0);
+            return CLOSE;
         }
     }
     return ERR;

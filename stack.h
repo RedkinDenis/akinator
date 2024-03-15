@@ -1,15 +1,10 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <string.h>
-#include <stdio.h>
-#include <malloc.h>
-#include <assert.h>
+#include "akinator.h"
+#include "..\err_codes.h"
 
-#include "C:\Users\vp717\Desktop\ilab\err_codes.h"
-#include "C:\Users\vp717\Desktop\ilab\processor\redkin_processor\DSL.h"
-
-typedef char* elem_t;
+typedef struct Node* elem_t;
 
 static const elem_t poison = NULL;
 
@@ -29,9 +24,5 @@ err stack_ctor(struct Stack* stk, size_t capacity);
 err stack_push(struct Stack* stk, const elem_t* x);
 
 err stack_dtor(struct Stack* stk);
-
-err capacity_down(struct Stack* stk);
-
-err capacity_up(struct Stack* stk);
 
 #endif //STACK_H
