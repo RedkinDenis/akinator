@@ -20,6 +20,10 @@
 
 #define CLOSE_BUTTON txGetExtentX() - 50, 0, txGetExtentX(), 37
 
+#define BACK_BUTTON txGetExtentX() - 300, 100, txGetExtentX() - 100, 200
+
+#define RESTART_BUTTON txGetExtentX() - 300, 300, txGetExtentX() - 100, 400
+
 struct BUTTON_
 {
     int x1 = 0;
@@ -30,7 +34,7 @@ struct BUTTON_
 
 static void draw_YN_bt ();
 
-static void draw_DN_bt ();
+static void draw_AKIN_bt ();
 
 static void say (void* data);
 
@@ -100,9 +104,11 @@ void draw_YN_bt ()
     txTextOut (no.x1 + 50, no.y1 + 10, "Нет");
 }
 
-void draw_DN_bt ()
+void draw_AKIN_bt ()
 {
     BUTTON_ skip = { SKIP_BUTTON };
+    BUTTON_ Back = { BACK_BUTTON };
+    BUTTON_ restart = { RESTART_BUTTON };
 
     txSetFillColor (TX_ORANGE);
 
@@ -111,6 +117,13 @@ void draw_DN_bt ()
 
     txRectangle (SKIP_BUTTON);
     txTextOut (skip.x1 + 30, skip.y1 + 5, "Не знаю");
+
+    txRectangle (BACK_BUTTON);
+    txTextOut (Back.x1 + 20, Back.y1 + 5, "Назад");
+
+    txSelectFont ("Times New Roman", 60);
+    txRectangle (RESTART_BUTTON);
+    txTextOut (restart.x1 + 5, restart.y1 + 15, "В начало");
 }
 
 void draw_mode_bt ()
@@ -169,11 +182,13 @@ enum answer check_answer (ans_mode mode)
     BUTTON_ yes = { YES_BUTTON };
     BUTTON_ no  = { NO_BUTTON };
     BUTTON_ close = { CLOSE_BUTTON };
+    BUTTON_ Back = { BACK_BUTTON };
+    BUTTON_ restart = { RESTART_BUTTON };
 
     BUTTON_ skip  = { SKIP_BUTTON };
 
     if (mode == YNDN)
-        draw_DN_bt();
+        draw_AKIN_bt();
 
     txWaveData_t shlepa = txWaveLoadWav ("shlepa.wav");
 
@@ -184,7 +199,7 @@ enum answer check_answer (ans_mode mode)
         {
             if ((time(NULL) - start) == 10)
             {
-                //txWaveOut (shlepa);
+                txWaveOut (shlepa);
                 start = time(NULL);
             }
         }
@@ -204,6 +219,16 @@ enum answer check_answer (ans_mode mode)
             while (txMouseButtons() != 0);
             return SKIP;
         }
+        else if (mode == YNDN && mouse_in(&Back))
+        {
+            while (txMouseButtons() != 0);
+            return BACK;
+        }
+        else if (mode == YNDN && mouse_in(&restart))
+        {
+            while (txMouseButtons() != 0);
+            return RESTART;
+        }
         else if (mouse_in(&close))
         {
             while (txMouseButtons() != 0);
@@ -213,7 +238,7 @@ enum answer check_answer (ans_mode mode)
     return ERR;
 }
 
-void put_answer (const char* data, wizard mood)
+void put_answer (const char* data, wizard mood, int symb_lim)
 {
     txClear();
     fill_window(mood);
@@ -230,6 +255,9 @@ void put_answer (const char* data, wizard mood)
         wide_coeff = 8;
     else
         wide_coeff = 7;
+
+    if(symb_lim != 0)
+        data_len = symb_lim;
 
     txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);

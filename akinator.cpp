@@ -21,8 +21,6 @@
     }                                \
     } while(0)
 
-static char* make_question (char* data);
-
 static err running(Node* tree, int* run);
 
 static err run_describe (Node* tree);
@@ -33,6 +31,10 @@ static err add_node (Node* tree);
 
 static err get_info (Node* tree, char** left_buf, char** parent_buf);
 
+static err ask (char* data);
+
+static char* make_question (char* data);
+
 static err treeKill (Node* head);
 
 static err deleteNode (Node* head);
@@ -40,6 +42,8 @@ static err deleteNode (Node* head);
 static err treeSearch (Node* head, data_t srch, Node** return_t);
 
 static err make_description (Node* tree, const char* obj, char** description);
+
+static err fill_description (Stack* stk, char** description);
 
 static err make_description__ (Node* tree, const char* obj, Stack* stk, int* found);
 
@@ -126,7 +130,7 @@ err run_guess (Node* tree, int* run)
 
     while (tree->right != NULL && tree->left != NULL)
     {
-        put_question (tree->data, THINKING);
+        ask(tree->data);
 
         ans = check_answer(YNDN);
 
@@ -140,6 +144,25 @@ err run_guess (Node* tree, int* run)
 
         else if (ans == SKIP)
             choose_subtree(&tree, &dont_know);
+
+        else if (ans == BACK)
+        {
+            if (tree->parent != NULL)
+            {
+                tree = tree->parent;
+                if (dont_know.data[dont_know.size - 1] == tree)
+                    stack_pop(&dont_know, NULL);
+            }
+            else
+                return SUCCESS;
+        }
+        else if (ans == RESTART)
+        {
+            while (tree->parent != NULL)
+                tree = tree->parent;
+            stack_dtor(&dont_know);
+            stack_ctor(&dont_know, 1);
+        }
 
         if (tree->right == NULL && tree->left == NULL)
         {
@@ -194,7 +217,7 @@ err run_describe (Node* tree)
     }
 
     make_description (tree, srch, &description);
-    put_answer(description, UNDERSTAND);
+    put_answer(description, UNDERSTAND, DATA_LEN);
 
     //txWaveOut (tam_blya);
 
@@ -227,6 +250,21 @@ char* make_question (char* data)
     strcat(question, " ?");
 
     return question;
+}
+
+err ask (char* data)
+{
+    char* qst = 0;
+
+    CALLOC(qst, char, (strlen("Ваш персонаж ") + strlen(data)));
+    strcat(qst, "Ваш персонаж ");
+    strcat(qst, data);
+    for (int i = 1; i < strlen(qst); i++)
+        qst[i] = (char)tolower(qst[i]);
+
+    put_question (qst, THINKING);
+
+    return SUCCESS;
 }
 
 err add_node (Node* tree)
@@ -342,38 +380,7 @@ err make_description (Node* tree, const char* obj, char** description)
 
     if (res == SUCCESS)
     {
-        int descr_size = 0;
-
-        for (size_t i = 0; i < stk.size; i++)
-            descr_size += ((int)strlen(stk.data[i]->data) + 1);
-
-        CALLOC(*(description), char, descr_size);
-
-        for (size_t i = 0; i < stk.size; i++)
-        {
-            strcat(*(description), stk.data[i]->data);
-
-            if (i == (stk.size - 2))
-                strcat(*(description), "и");
-
-            strcat(*(description), " ");
-        }
-
-        size_t cnt = 0;
-        for (int i = 1; i < descr_size; i++)
-        {
-            if ((*description)[i] == '?')
-            {
-                cnt++;
-                if (cnt == stk.size)
-                    (*description)[i] = '.';
-                else if (cnt == (stk.size - 1))
-                    (*description)[i] = ' ';
-                else
-                    (*description)[i] = ',';
-            }
-            (*description)[i] = (char)tolower((*description)[i]);
-        }
+        fill_description(&stk, description);
     }
     else
     {
@@ -386,6 +393,49 @@ err make_description (Node* tree, const char* obj, char** description)
 
     stack_dtor(&stk);
     return res;
+}
+
+err fill_description (Stack* stk, char** description)
+{
+    int descr_size = 0;
+
+    for (size_t i = 0; i < stk->size; i++)
+        descr_size += ((int)strlen(stk->data[i]->data) + 5);
+
+    CALLOC(*(description), char, descr_size);
+
+    for (size_t i = 0; i < stk->size; i++)
+    {
+        if (i < stk->size - 1 && (stk->data[i])->right == stk->data[i + 1])
+            strcat(*(description), "не ");
+
+        strcat(*(description), stk->data[i]->data);
+
+        if (i == (stk->size - 2))
+            strcat(*(description), "и");
+
+        strcat(*(description), " ");
+    }
+
+    size_t cnt = 0;
+
+    (*description)[0] = (char)toupper((*description)[0]);
+    for (int i = 1; i < descr_size; i++)
+    {
+        if ((*description)[i] == '?')
+        {
+            cnt++;
+            if (cnt == stk->size)
+                (*description)[i] = '.';
+            else if (cnt == (stk->size - 1))
+                (*description)[i] = ' ';
+            else
+                (*description)[i] = ',';
+        }
+        (*description)[i] = (char)tolower((*description)[i]);
+    }
+
+    return SUCCESS;
 }
 
 err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
@@ -401,9 +451,11 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
 
     if (tree->right != NULL)
     {
+        stack_push(stk, &tree);
         make_description__(tree->right, obj, stk, found);
         if (*found == 1)
             return SUCCESS;
+        stack_pop(stk, NULL);
     }
 
     if (strcmp(tree->data, obj) == 0)
@@ -416,7 +468,7 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
 
 void split_str (char** description)
 {
-    int line_len = 40;
+    int line_len = DATA_LEN;
 
     int ds_len = (int)strlen(*description);
     int lines = ds_len / line_len + 1;

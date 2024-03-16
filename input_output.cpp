@@ -73,7 +73,7 @@ err draw_tree (Node* tree)
 {
     FOPEN(save, "drawTree.txt", "wb");
 
-    fprintf(save, "digraph List {\n");
+    fprintf(save, "digraph Tree {\n");
 
     int node_num = 0;
     draw_tree_1(save, tree, &node_num);

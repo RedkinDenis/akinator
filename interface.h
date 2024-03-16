@@ -10,7 +10,9 @@ enum answer
     DESCR = 4,
     SHOW = 5,
     CLOSE = 6,
-    SKIP = 7
+    SKIP = 7,
+    BACK = 8,
+    RESTART = 9
 };
 
 enum wizard
@@ -44,6 +46,6 @@ void fill_window (wizard mood);
 
 void put_question (char* data, wizard mood);
 
-void put_answer (const char* data, wizard mood);
+void put_answer (const char* data, wizard mood, int symb_lim = 0);
 
 #endif //INTERFACE_H

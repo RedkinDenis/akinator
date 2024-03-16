@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#define DATA_LEN 30
+#define DATA_LEN 40
 
 typedef char* data_t;
 
