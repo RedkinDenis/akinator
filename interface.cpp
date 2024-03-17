@@ -24,6 +24,8 @@
 
 #define RESTART_BUTTON txGetExtentX() - 300, 300, txGetExtentX() - 100, 400
 
+#define ADD_BUTTON txGetExtentX() - 300, 500, txGetExtentX() - 100, 600
+
 struct BUTTON_
 {
     int x1 = 0;
@@ -39,6 +41,11 @@ static void draw_AKIN_bt ();
 static void say (void* data);
 
 static int mouse_in (BUTTON_* bt);
+
+static void draw_ADD_bt ();
+
+static void draw_back_bt ();
+
 
 void mySleep (int time)
 {
@@ -107,8 +114,6 @@ void draw_YN_bt ()
 void draw_AKIN_bt ()
 {
     BUTTON_ skip = { SKIP_BUTTON };
-    BUTTON_ Back = { BACK_BUTTON };
-    BUTTON_ restart = { RESTART_BUTTON };
 
     txSetFillColor (TX_ORANGE);
 
@@ -117,6 +122,19 @@ void draw_AKIN_bt ()
 
     txRectangle (SKIP_BUTTON);
     txTextOut (skip.x1 + 30, skip.y1 + 5, "Не знаю");
+
+    draw_back_bt();
+}
+
+void draw_back_bt ()
+{
+    BUTTON_ Back = { BACK_BUTTON };
+    BUTTON_ restart = { RESTART_BUTTON };
+
+    txSetFillColor (TX_ORANGE);
+
+    txSetColor (TX_RED);
+    txSelectFont ("Times New Roman", 80);
 
     txRectangle (BACK_BUTTON);
     txTextOut (Back.x1 + 20, Back.y1 + 5, "Назад");
@@ -145,6 +163,19 @@ void draw_mode_bt ()
 
     txRectangle (SHOW_BUTTON);
     txTextOut (show.x1 + 25, show.y1 + 10, "Выдать базу");
+}
+
+void draw_ADD_bt ()
+{
+    BUTTON_ add = { ADD_BUTTON };
+
+    txSetFillColor (TX_RED);
+
+    txSetColor (TX_ORANGE);
+    txSelectFont ("Times New Roman", 60);
+
+    txRectangle (ADD_BUTTON);
+    txTextOut (add.x1 + 25, add.y1 + 10, "Добавить");
 }
 
 void say (void* data)
@@ -225,6 +256,44 @@ enum answer check_answer (ans_mode mode)
             return BACK;
         }
         else if (mode == YNDN && mouse_in(&restart))
+        {
+            while (txMouseButtons() != 0);
+            return RESTART;
+        }
+        else if (mouse_in(&close))
+        {
+            while (txMouseButtons() != 0);
+            return CLOSE;
+        }
+    }
+    return ERR;
+}
+
+answer check_add ()
+{
+    BUTTON_ add = { ADD_BUTTON };
+    BUTTON_ close = { CLOSE_BUTTON };
+    BUTTON_ Back = { BACK_BUTTON };
+    BUTTON_ restart = { RESTART_BUTTON };
+
+    draw_ADD_bt();
+    draw_back_bt();
+
+    while(1)
+    {
+        while (txMouseButtons() != 1);
+
+        if (mouse_in(&add))
+        {
+            while (txMouseButtons() != 0);
+            return ADD;
+        }
+        else if (mouse_in(&Back))
+        {
+            while (txMouseButtons() != 0);
+            return BACK;
+        }
+        else if (mouse_in(&restart))
         {
             while (txMouseButtons() != 0);
             return RESTART;

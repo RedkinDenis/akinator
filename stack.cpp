@@ -10,12 +10,9 @@ static err capacity_down(struct Stack* stk);
 
 static err capacity_up(struct Stack* stk);
 
-/*err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* file_name, const char* func_name)
+err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* file_name, const char* func_name)
 {
     CHECK_PTR(stk);
-    CHECK_PTR(stk_name);
-    CHECK_PTR(file_name);
-    CHECK_PTR(func_name);
 
     printf("--------STACK---------");
     printf("\n------DUMP_BEGIN------\n");
@@ -27,15 +24,15 @@ static err capacity_up(struct Stack* stk);
     printf("stack->data adress: %d\n", stk->data);
     printf("capacity - %d\nsize - %d\nstack:\n", stk->capacity, stk->size);
     for(int i = 0; i < stk->size; i++)
-        printf("*[%d] = %s  ", i, stk->data[i]);
+        printf("*[%d] = %p  ", i, stk->data[i]);
     for(int i = stk->size; i < stk->capacity; i++)
-        printf("*[%d] = poison  ", i);
+        printf("*[%p] = poison  ", i);
 
     printf("\n-------DUMP_END-------\n\n");
 
     return SUCCESS;
 }
-*/
+
 
 err stack_ctor(struct Stack* stk, size_t capacity)
 {
@@ -122,6 +119,10 @@ err capacity_up(struct Stack* stk)
         return SUCCESS;
 
     int expander = 0;
+
+    if (stk->capacity == 0)
+        expander = 1;
+
     if(stk->capacity >= 100)
         expander = 50;
     else

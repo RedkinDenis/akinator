@@ -17,7 +17,7 @@ struct Stack
 
 err stack_pop(struct Stack* stk, elem_t* pop_el);
 
-err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* file_name, const char* func_name);
+err stack_dump(struct Stack* stk, int LINE = 0, const char* stk_name = NULL, const char* file_name = NULL, const char* func_name = NULL);
 
 err stack_ctor(struct Stack* stk, size_t capacity);
 

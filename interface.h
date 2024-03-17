@@ -12,7 +12,8 @@ enum answer
     CLOSE = 6,
     SKIP = 7,
     BACK = 8,
-    RESTART = 9
+    RESTART = 9,
+    ADD = 10
 };
 
 enum wizard
@@ -35,6 +36,8 @@ void mySleep (int time);
 void draw_mode_bt ();
 
 enum answer check_answer (ans_mode mode);
+
+answer check_add ();
 
 enum answer choose_mode ();
 

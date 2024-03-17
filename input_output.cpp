@@ -26,9 +26,9 @@ static void draw_tree_1 (FILE* save, Node* tree, int* node_num);
 
 static void draw_tree_2 (FILE* save, Node* tree);
 
-static err printTree__ (Node* head, int* tab);
+static err print_tree__ (Node* head, int* tab);
 
-static err fprintTree__ (FILE* out, Node* head, int* tab);
+static err fprint_tree__ (FILE* out, Node* head, int* tab);
 
 
 int GetFileSize(FILE* fp)
@@ -136,15 +136,15 @@ void draw_tree_2 (FILE* save, Node* tree)
     return;
 }
 
-err printTree (Node* head)
+err print_tree (Node* head)
 {
     CHECK_PTR(head);
 
     int tab = 0;
-    return printTree__(head, &tab);
+    return print_tree__(head, &tab);
 }
 
-err printTree__ (Node* head, int* tab)
+err print_tree__ (Node* head, int* tab)
 {
     CHECK_PTR(head);
 
@@ -158,13 +158,13 @@ err printTree__ (Node* head, int* tab)
     {
         *tab += 1;
         printf("\n");
-        printTree__(head->left, tab);
+        print_tree__(head->left, tab);
     }
 
     if (head->right != NULL)
     {
         printf("\n");
-        printTree__(head->right, tab);
+        print_tree__(head->right, tab);
         *tab -= 1;
     }
 
@@ -173,16 +173,16 @@ err printTree__ (Node* head, int* tab)
     return SUCCESS;
 }
 
-err fprintTree (FILE* out, Node* head)
+err fprint_tree (FILE* out, Node* head)
 {
     CHECK_PTR(out);
     CHECK_PTR(head);
 
     int tab = 0;
-    return fprintTree__(out, head, &tab);
+    return fprint_tree__(out, head, &tab);
 }
 
-err fprintTree__ (FILE* out, Node* head, int* tab)
+err fprint_tree__ (FILE* out, Node* head, int* tab)
 {
     CHECK_PTR(head);
 
@@ -196,13 +196,13 @@ err fprintTree__ (FILE* out, Node* head, int* tab)
     {
         *tab += 1;
         fprintf(out, "\n");
-        fprintTree__(out, head->left, tab);
+        fprint_tree__(out, head->left, tab);
     }
 
     if (head->right != NULL)
     {
         fprintf(out, "\n");
-        fprintTree__(out, head->right, tab);
+        fprint_tree__(out, head->right, tab);
         *tab -= 1;
     }
 

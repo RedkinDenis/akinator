@@ -23,9 +23,15 @@
 
 static err running(Node* tree, int* run);
 
+static err change_tree (Node* tree, int* run);
+
+static err get_node_info (Node* tree);
+
 static err run_describe (Node* tree);
 
 static err run_guess (Node* tree, int* run);
+
+static err check_back_restart (answer ans, Node** tree, Stack* dont_know = NULL);
 
 static err add_node (Node* tree);
 
@@ -35,7 +41,7 @@ static err ask (char* data);
 
 static char* make_question (char* data);
 
-static err treeKill (Node* head);
+static err tree_kill (Node* head);
 
 static err deleteNode (Node* head);
 
@@ -55,7 +61,7 @@ static void choose_subtree (Node** tree, Stack* stk);
 
 int main()
 {
-    FOPEN(read, "treeSave1.txt", "rb");
+    FOPEN(read, "rtTree.txt", "rb");
 
     Node* tree = {};
 
@@ -72,16 +78,124 @@ int main()
     while (run == 1)
         running(tree, &run);
 
-    //printTree(tree);
+    print_tree(tree);
 
-    /*FOPEN(out, "treeSave1.txt", "wb");
+    /*FOPEN(out, "rtTree.txt", "wb");
 
-    fprintTree(out, tree);
+    fprint_tree(out, tree);
 
-    fclose(out);
-*/
+    fclose(out);*/
 
-    treeKill(tree);
+    tree_kill(tree);
+}
+
+err change_tree (Node* tree, int* run)
+{
+    answer ans = ERR;
+    while (1)
+    {
+        ask(tree->data);
+        ans = check_answer(YNDN);
+
+        CHECK_FOR_CLOSE (ans, run);
+
+        if (ans == YES)
+            tree = tree->left;
+
+        else if (ans == NO)
+            tree = tree->right;
+
+        if (check_back_restart(ans, &tree) == FAIL)
+            return SUCCESS;
+
+        if (tree->right == NULL && tree->left == NULL)
+        {
+            put_answer(tree->data, THINKING);
+            ans = check_add ();
+
+            CHECK_FOR_CLOSE (ans, run);
+
+            if (check_back_restart(ans, &tree) == FAIL)
+                return SUCCESS;
+
+            if (ans == ADD)
+                get_node_info(tree);
+        }
+    }
+    return SUCCESS;
+}
+
+err get_node_info (Node* tree)
+{
+    answer ans = ERR;
+    char* right_buf = 0;
+    char* left_buf = 0;
+
+    CALLOC(left_buf, char, DATA_LEN + 1);
+    CALLOC(right_buf, char, DATA_LEN + 1);
+
+    InputBox(left_buf, "Введите значение узла по направлению ДА", DATA_LEN);
+    if (ans == ERR)
+    {
+        free(left_buf);
+        return FAIL;
+    }
+
+    InputBox(right_buf, "Введите значение узла по направлению НЕТ", DATA_LEN);
+    if (ans == ERR)
+    {
+        free(left_buf);
+        free(right_buf);
+        return FAIL;
+    }
+
+    CALLOC(tree->right, Node, 1);
+    CALLOC(tree->left, Node, 1);
+
+    Node* right = tree->right;
+    Node* left = tree->left;
+
+    CALLOC(right->data, char, DATA_LEN + 1);
+    CALLOC(left->data, char, DATA_LEN + 1);
+
+    right->parent = tree;
+    left->parent = tree;
+
+    strcpy(right->data, right_buf);
+    strcpy(left->data, left_buf);
+
+    free(left_buf);
+    free(right_buf);
+
+    return SUCCESS;
+}
+
+err check_back_restart (answer ans, Node** tree, Stack* dont_know)
+{
+    if (ans == BACK)
+    {
+        if ((*tree)->parent != NULL)
+        {
+            (*tree) = (*tree)->parent;
+            if (dont_know != NULL)
+                if (dont_know->data[dont_know->size - 1] == (*tree))
+                    stack_pop(dont_know, NULL);
+        }
+        else
+            return FAIL;
+    }
+    else if (ans == RESTART)
+    {
+        while ((*tree)->parent != NULL)
+            (*tree) = (*tree)->parent;
+
+        if (dont_know != NULL)
+        {
+            stack_dtor(dont_know);
+            stack_ctor(dont_know, 0);
+        }
+    }
+    return SUCCESS;
 }
 
 err running(Node* tree, int* run)
@@ -145,7 +259,9 @@ err run_guess (Node* tree, int* run)
         else if (ans == SKIP)
             choose_subtree(&tree, &dont_know);
 
-        else if (ans == BACK)
+         if (check_back_restart(ans, &tree, &dont_know) == FAIL)
+            return SUCCESS;
+        /*else if (ans == BACK)
         {
             if (tree->parent != NULL)
             {
@@ -161,8 +277,8 @@ err run_guess (Node* tree, int* run)
             while (tree->parent != NULL)
                 tree = tree->parent;
             stack_dtor(&dont_know);
-            stack_ctor(&dont_know, 1);
-        }
+            stack_ctor(&dont_know, 0);
+        }*/
 
         if (tree->right == NULL && tree->left == NULL)
         {
@@ -179,12 +295,11 @@ err run_guess (Node* tree, int* run)
             else if (ans == NO)
             {
                 if (dont_know.size > 0)
+                {
                     other_subtree(&tree, &dont_know);
-
+                }
                 else
                 {
-                    stack_dtor(&dont_know);
-
                     err res = add_node(tree);
 
                     if (res == FAIL)
@@ -197,6 +312,7 @@ err run_guess (Node* tree, int* run)
             }
         }
     }
+    stack_dtor(&dont_know);
     mySleep(5000);
     return SUCCESS;
 }
@@ -228,15 +344,15 @@ err run_describe (Node* tree)
     return SUCCESS;
 }
 
-err treeKill (Node* head)
+err tree_kill (Node* head)
 {
     CHECK_PTR(head);
 
     if (head->left != NULL)
-        treeKill(head->left);
+        tree_kill(head->left);
 
     if (head->right != NULL)
-        treeKill(head->right);
+        tree_kill(head->right);
 
     free(head);
     return SUCCESS;
@@ -256,8 +372,8 @@ err ask (char* data)
 {
     char* qst = 0;
 
-    CALLOC(qst, char, (strlen("Ваш персонаж ") + strlen(data)));
-    strcat(qst, "Ваш персонаж ");
+    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data)));
+    strcat(qst, "Ваш объект ");
     strcat(qst, data);
     for (int i = 1; i < strlen(qst); i++)
         qst[i] = (char)tolower(qst[i]);
