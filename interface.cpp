@@ -20,11 +20,15 @@
 
 #define CLOSE_BUTTON txGetExtentX() - 50, 0, txGetExtentX(), 37
 
-#define BACK_BUTTON txGetExtentX() - 300, 100, txGetExtentX() - 100, 200
+#define BACK_BUTTON txGetExtentX() - 300, 250, txGetExtentX() - 100, 350
 
-#define RESTART_BUTTON txGetExtentX() - 300, 300, txGetExtentX() - 100, 400
+#define RESTART_BUTTON txGetExtentX() - 300, 400, txGetExtentX() - 100, 500
 
-#define ADD_BUTTON txGetExtentX() - 300, 500, txGetExtentX() - 100, 600
+#define ADD_BUTTON txGetExtentX() - 300, 550, txGetExtentX() - 100, 650
+
+#define FILD_COLOR RGB(177, 71, 74)
+
+#define BT_COLOR RGB(247, 4, 56)
 
 struct BUTTON_
 {
@@ -66,19 +70,19 @@ void fill_window (wizard mood)
     const char* wizard_type = 0;
 
     if (mood == UNDERSTAND)
-        wizard_type = "understanding_wizard.bmp";
+        wizard_type = "understand_yakov.bmp";
 
     else if (mood == THINKING)
         wizard_type = "thinking_wizard.bmp";
 
     else if (mood == BASE)
-        wizard_type = "base_wizard.bmp";
+        wizard_type = "base_yakov.bmp";
 
     else if (mood == CONFUSED)
         wizard_type = "confused_wizard.bmp";
 
     else if (mood == PROUD)
-        wizard_type = "proud_wizard.bmp";
+        wizard_type = "proud_yakov.bmp";
 
     HDC wizard = txLoadImage (wizard_type);
 
@@ -86,7 +90,7 @@ void fill_window (wizard mood)
 
     txBitBlt (txDC(), 0, 0, txGetExtentX(), txGetExtentY(), background, 0, 0);
 
-    txTransparentBlt (txDC(), 0, 0, 0, 0, wizard, 0, 0);
+    txTransparentBlt (txDC(), 0, 90, 0, 0, wizard, 0, 0);
 
     BUTTON_ close = { CLOSE_BUTTON };
     txTransparentBlt (txDC(), close.x1, 0, 0, 0, Close, 0, 0);
@@ -99,9 +103,9 @@ void draw_YN_bt ()
     BUTTON_ yes = { YES_BUTTON };
     BUTTON_ no  = { NO_BUTTON };
 
-    txSetFillColor (TX_ORANGE);
+    txSetFillColor (BT_COLOR);
 
-    txSetColor (TX_RED);
+    txSetColor (TX_BLACK);
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (YES_BUTTON);
@@ -115,9 +119,9 @@ void draw_AKIN_bt ()
 {
     BUTTON_ skip = { SKIP_BUTTON };
 
-    txSetFillColor (TX_ORANGE);
+    txSetFillColor (BT_COLOR);
 
-    txSetColor (TX_RED);
+    txSetColor (TX_BLACK);
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (SKIP_BUTTON);
@@ -131,9 +135,9 @@ void draw_back_bt ()
     BUTTON_ Back = { BACK_BUTTON };
     BUTTON_ restart = { RESTART_BUTTON };
 
-    txSetFillColor (TX_ORANGE);
+    txSetFillColor (BT_COLOR);
 
-    txSetColor (TX_RED);
+    txSetColor (TX_BLACK);
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (BACK_BUTTON);
@@ -150,9 +154,9 @@ void draw_mode_bt ()
     BUTTON_ describe = { DESCR_BUTTON };
     BUTTON_ show = { SHOW_BUTTON };
 
-    txSetFillColor (TX_ORANGE);
+    txSetFillColor (BT_COLOR);
 
-    txSetColor (TX_RED);
+    txSetColor (TX_BLACK);
     txSelectFont ("Times New Roman", 60);
 
     txRectangle (GUESS_BUTTON);
@@ -169,9 +173,9 @@ void draw_ADD_bt ()
 {
     BUTTON_ add = { ADD_BUTTON };
 
-    txSetFillColor (TX_RED);
+    txSetFillColor (BT_COLOR);
 
-    txSetColor (TX_ORANGE);
+    txSetColor (TX_BLACK);
     txSelectFont ("Times New Roman", 60);
 
     txRectangle (ADD_BUTTON);
@@ -191,7 +195,7 @@ void put_question (char* data, wizard mood)
     fill_window(mood);
     draw_YN_bt();
 
-    txSetFillColor (TX_BLUE);
+    txSetFillColor (FILD_COLOR);
 
     int data_len = (int)strlen(data);
     int wide_coeff = 0;
@@ -203,7 +207,7 @@ void put_question (char* data, wizard mood)
     txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
 
-    txSetColor (TX_WHITE);
+    txSetColor (TX_BLACK);
     txSelectFont ("Comic Sans MS", 40);
     txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
 }
@@ -220,6 +224,11 @@ enum answer check_answer (ans_mode mode)
 
     if (mode == YNDN)
         draw_AKIN_bt();
+    else if (mode == YNBR)
+    {
+        draw_YN_bt();
+        draw_back_bt();
+    }
 
     txWaveData_t shlepa = txWaveLoadWav ("shlepa.wav");
 
@@ -250,12 +259,12 @@ enum answer check_answer (ans_mode mode)
             while (txMouseButtons() != 0);
             return SKIP;
         }
-        else if (mode == YNDN && mouse_in(&Back))
+        else if ((mode == YNDN || mode == YNBR) && mouse_in(&Back))
         {
             while (txMouseButtons() != 0);
             return BACK;
         }
-        else if (mode == YNDN && mouse_in(&restart))
+        else if ((mode == YNDN || mode == YNBR) && mouse_in(&restart))
         {
             while (txMouseButtons() != 0);
             return RESTART;
@@ -312,7 +321,7 @@ void put_answer (const char* data, wizard mood, int symb_lim)
     txClear();
     fill_window(mood);
 
-    txSetFillColor (TX_BLUE);
+    txSetFillColor (FILD_COLOR);
 
     int data_len = (int)strlen(data);
     int wide_coeff = 0;
@@ -331,7 +340,7 @@ void put_answer (const char* data, wizard mood, int symb_lim)
     txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
 
-    txSetColor (TX_WHITE);
+    txSetColor (TX_BLACK);
     txSelectFont ("Comic Sans MS", 40);
     txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
 }
@@ -384,7 +393,8 @@ answer InputBox (char* data, const char* message, int data_len)
 {
     const char* temp = txInputBox(message, "Помогите мне стать лучше");
 
-    char* try_again = (char*)calloc(strlen("Это поле не может быть пустым!\n  \nПоследняя попытка!!!\nПотом игра прервется") + strlen(message), sizeof(char));
+    char* try_again = (char*)calloc(
+            strlen("Это поле не может быть пустым!\n  \nПоследняя попытка!!!\nПотом игра прервется") + strlen(message), sizeof(char));
     strcpy(try_again, "Это поле не может быть пустым!\n");
     strcat(try_again, message);
 

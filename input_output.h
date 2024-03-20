@@ -13,9 +13,9 @@ int GetFileSize(FILE* fp);
 
 err draw_tree (Node* tree);
 
-err printTree (Node* head);
+err print_tree (Node* head);
 
-err fprintTree (FILE* out, Node* head);
+err fprint_tree (FILE* out, Node* head);
 
 err importTree (FILE* read ,Node* head);
 

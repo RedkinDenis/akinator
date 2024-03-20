@@ -93,7 +93,7 @@ void draw_tree_1 (FILE* save, Node* tree, int* node_num)
 {
     char* buffer = (char*)calloc(strlen(tree->data) + 3, sizeof(char));
     buffer[0] = '"';
-    strcat(buffer, tree->data);
+    strcat(buffer, tree->data);                                                 //memcpy
     buffer[strlen(tree->data) + 1] = '"';
 
     tree->num_in_tree = *node_num;
@@ -218,7 +218,7 @@ err fill_buffer (FILE* read, char** buf)
 
     int fsize = GetFileSize(read);
 
-    CALLOC(*buf, char, (fsize + 2));
+    CALLOC(*buf, char, (fsize + 1));
 
     fread(*buf, sizeof(char), fsize, read);
 
@@ -234,6 +234,8 @@ err importTree (FILE* read, Node* tree)
     fill_buffer(read, &buf);
 
     int level = 0, ptr = 0;
+
+    goto_prace(buf, &ptr);
 
     if (buf[ptr] == '(')
     {

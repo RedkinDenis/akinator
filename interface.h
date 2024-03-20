@@ -28,7 +28,8 @@ enum wizard
 enum ans_mode
 {
     YN = 1,
-    YNDN = 2
+    YNDN = 2,
+    YNBR = 3
 };
 
 void mySleep (int time);

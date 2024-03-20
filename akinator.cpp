@@ -21,11 +21,23 @@
     }                                \
     } while(0)
 
-static err running(Node* tree, int* run);
+enum mode
+{
+    USER = 1,
+    GOD = 2
+};
+
+static mode choose_game_mode (int argc, char* argv[]);
+
+static int check_password (char* str);
+
+static char* caesar (const char* str);
 
 static err change_tree (Node* tree, int* run);
 
 static err get_node_info (Node* tree);
+
+static err running(Node* tree, int* run);
 
 static err run_describe (Node* tree);
 
@@ -59,7 +71,7 @@ static void other_subtree (Node** tree, Stack* stk);
 
 static void choose_subtree (Node** tree, Stack* stk);
 
-int main()
+int main(int argc, char* argv[])
 {
     FOPEN(read, "rtTree.txt", "rb");
 
@@ -75,10 +87,18 @@ int main()
     create_window ();
 
     int run = 1;
-    while (run == 1)
-        running(tree, &run);
 
-    print_tree(tree);
+    mode md = choose_game_mode(argc, argv);
+
+    if (md == GOD)
+        while (run == 1)
+            change_tree(tree, &run);
+
+    else
+        while (run == 1)
+            running(tree, &run);
+
+    //print_tree(tree);
 
     /*FOPEN(out, "rtTree.txt", "wb");
 
@@ -89,13 +109,50 @@ int main()
     tree_kill(tree);
 }
 
+mode choose_game_mode (int argc, char* argv[])
+{
+    //const char* password = "god";
+    if(argc == 1)
+        return USER;
+
+    if (argc == 2 && check_password(argv[1]))
+        return GOD;
+
+    else if (argc > 2)
+    {
+        printf ("Аргументы не были распознаны\n");
+        mySleep(1500);
+    }
+    return USER;
+}
+
+int check_password (char* str)
+{
+    const char* password = "ufxx|twi";
+
+    if (strncmp(password, caesar(str), strlen(password)) == 0)
+        return 1;
+
+    return 0;
+}
+
+char* caesar (const char* str)
+{
+    char* code = (char*)calloc(strlen(str), sizeof(char));
+
+    for (int i = 0; i < strlen(str); i++)
+        code[i] = str[i] + 5;
+
+    return code;
+}
+
 err change_tree (Node* tree, int* run)
 {
     answer ans = ERR;
     while (1)
     {
         ask(tree->data);
-        ans = check_answer(YNDN);
+        ans = check_answer(YNBR);
 
         CHECK_FOR_CLOSE (ans, run);
 
@@ -261,24 +318,6 @@ err run_guess (Node* tree, int* run)
 
          if (check_back_restart(ans, &tree, &dont_know) == FAIL)
             return SUCCESS;
-        /*else if (ans == BACK)
-        {
-            if (tree->parent != NULL)
-            {
-                tree = tree->parent;
-                if (dont_know.data[dont_know.size - 1] == tree)
-                    stack_pop(&dont_know, NULL);
-            }
-            else
-                return SUCCESS;
-        }
-        else if (ans == RESTART)
-        {
-            while (tree->parent != NULL)
-                tree = tree->parent;
-            stack_dtor(&dont_know);
-            stack_ctor(&dont_know, 0);
-        }*/
 
         if (tree->right == NULL && tree->left == NULL)
         {
@@ -556,6 +595,8 @@ err fill_description (Stack* stk, char** description)
 
 err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
 {
+    CHECK_PTR(tree);
+
     if (tree->left != NULL)
     {
         stack_push(stk, &tree);
