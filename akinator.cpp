@@ -73,30 +73,37 @@ static void choose_subtree (Node** tree, Stack* stk);
 
 int main(int argc, char* argv[])
 {
-    FOPEN(read, "rtTree.txt", "rb");
+    try
+    {
+        FOPEN(read, "rtTree.txt", "rb");
 
-    Node* tree = {};
+        Node* tree = {};
 
-    CALLOC(tree, Node, 1);
-    CALLOC(tree->data, char, DATA_LEN + 1);
+        CALLOC(tree, Node, 1);
+        CALLOC(tree->data, char, DATA_LEN + 1);
 
-    importTree(read, tree);
+        importTree(read, tree);
 
-    fclose(read);
+        fclose(read);
 
-    create_window ();
+        create_window ();
 
-    int run = 1;
+        int run = 1;
 
-    mode md = choose_game_mode(argc, argv);
+        mode md = choose_game_mode(argc, argv);
 
-    if (md == GOD)
-        while (run == 1)
-            change_tree(tree, &run);
+        if (md == GOD)
+            while (run == 1)
+                change_tree(tree, &run);
 
-    else
-        while (run == 1)
-            running(tree, &run);
+        else
+            while (run == 1)
+                running(tree, &run);
+
+        tree_kill(tree);
+    }
+
+    catch (...) { printf ("UNHANDLED EXCEPTION"); }
 
     //print_tree(tree);
 
@@ -106,7 +113,7 @@ int main(int argc, char* argv[])
 
     fclose(out);*/
 
-    tree_kill(tree);
+    //tree_kill(tree);
 }
 
 mode choose_game_mode (int argc, char* argv[])
@@ -120,7 +127,7 @@ mode choose_game_mode (int argc, char* argv[])
 
     else if (argc > 2)
     {
-        printf ("Аргументы не были распознаны\n");
+        printf ("РђСЂРіСѓРјРµРЅС‚С‹ РЅРµ Р±С‹Р»Рё СЂР°СЃРїРѕР·РЅР°РЅС‹\n");
         mySleep(1500);
     }
     return USER;
@@ -191,14 +198,14 @@ err get_node_info (Node* tree)
     CALLOC(left_buf, char, DATA_LEN + 1);
     CALLOC(right_buf, char, DATA_LEN + 1);
 
-    InputBox(left_buf, "Введите значение узла по направлению ДА", DATA_LEN);
+    InputBox(left_buf, "Р’РІРµРґРёС‚Рµ Р·РЅР°С‡РµРЅРёРµ СѓР·Р»Р° РїРѕ РЅР°РїСЂР°РІР»РµРЅРёСЋ Р”Рђ", DATA_LEN);
     if (ans == ERR)
     {
         free(left_buf);
         return FAIL;
     }
 
-    InputBox(right_buf, "Введите значение узла по направлению НЕТ", DATA_LEN);
+    InputBox(right_buf, "Р’РІРµРґРёС‚Рµ Р·РЅР°С‡РµРЅРёРµ СѓР·Р»Р° РїРѕ РЅР°РїСЂР°РІР»РµРЅРёСЋ РќР•Рў", DATA_LEN);
     if (ans == ERR)
     {
         free(left_buf);
@@ -276,14 +283,18 @@ err running(Node* tree, int* run)
         run_describe(tree);
 
     else if (ans == SHOW)
+    {
+        put_answer ("Р’РѕС‚!", FISH);
+        mySleep(1500);
         draw_tree(tree);
-
-    put_question((char*)"Играть снова?", BASE);
+        mySleep(5000);
+    }
+    put_question((char*)"РРіСЂР°С‚СЊ СЃРЅРѕРІР°?", BASE);
     ans = check_answer(YN);
 
     if (ans == NO)
     {
-        put_answer("Спасибо за игру!", BASE);
+        put_answer("РЎРїР°СЃРёР±Рѕ Р·Р° РёРіСЂСѓ!", BASE);
         *run = 0;
     }
 
@@ -329,7 +340,7 @@ err run_guess (Node* tree, int* run)
             CHECK_FOR_CLOSE (ans, run);
 
             if (ans == YES)
-                put_answer("От меня ничего не укроется", PROUD);
+                put_answer("РћС‚ РјРµРЅСЏ РЅРёС‡РµРіРѕ РЅРµ СѓРєСЂРѕРµС‚СЃСЏ", PROUD);
 
             else if (ans == NO)
             {
@@ -344,7 +355,7 @@ err run_guess (Node* tree, int* run)
                     if (res == FAIL)
                         return SUCCESS;
 
-                    put_answer("Вам удалось победить меня.", CONFUSED);
+                    put_answer("Р’Р°Рј СѓРґР°Р»РѕСЃСЊ РїРѕР±РµРґРёС‚СЊ РјРµРЅСЏ.", CONFUSED);
 
                     break;
                 }
@@ -364,7 +375,7 @@ err run_describe (Node* tree)
 
     //txWaveData_t tam_blya = txWaveLoadWav ("description.wav");
 
-    answer ans = InputBox(srch, "Чье описание вы хотите получить ?\n( Пожалуйста, вводите в именительном падеже )", DATA_LEN);
+    answer ans = InputBox(srch, "Р§СЊРµ РѕРїРёСЃР°РЅРёРµ РІС‹ С…РѕС‚РёС‚Рµ РїРѕР»СѓС‡РёС‚СЊ ?\n( РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РІРІРѕРґРёС‚Рµ РІ РёРјРµРЅРёС‚РµР»СЊРЅРѕРј РїР°РґРµР¶Рµ )", DATA_LEN);
     if (ans == ERR)
     {
         free(srch);
@@ -399,8 +410,8 @@ err tree_kill (Node* head)
 
 char* make_question (char* data)
 {
-    char* question = (char*)calloc(strlen(data) + strlen("Это  ?"), sizeof(char));
-    strcpy(question, "Это ");
+    char* question = (char*)calloc(strlen(data) + strlen("Р­С‚Рѕ  ?"), sizeof(char));
+    strcpy(question, "Р­С‚Рѕ ");
     strcat(question, data);
     strcat(question, " ?");
 
@@ -411,8 +422,8 @@ err ask (char* data)
 {
     char* qst = 0;
 
-    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data)));
-    strcat(qst, "Ваш объект ");
+    CALLOC(qst, char, (strlen("Р’Р°С€ РѕР±СЉРµРєС‚ ") + strlen(data)));
+    strcat(qst, "Р’Р°С€ РѕР±СЉРµРєС‚ ");
     strcat(qst, data);
     for (int i = 1; i < strlen(qst); i++)
         qst[i] = (char)tolower(qst[i]);
@@ -461,7 +472,7 @@ err get_info (Node* tree, char** left_buf, char** parent_buf)
 
     CALLOC(*left_buf, char, DATA_LEN + 1);
 
-    ans = InputBox(*left_buf, "Кого или что вы имели в виду?", DATA_LEN);
+    ans = InputBox(*left_buf, "РљРѕРіРѕ РёР»Рё С‡С‚Рѕ РІС‹ РёРјРµР»Рё РІ РІРёРґСѓ?", DATA_LEN);
     if (ans == ERR)
     {
         free(*left_buf);
@@ -469,8 +480,8 @@ err get_info (Node* tree, char** left_buf, char** parent_buf)
     }
 
     char* what_different = 0;
-    CALLOC(what_different, char, (strlen("Чем  отличается от  ?") + strlen(*left_buf) + strlen(tree->data)));
-    sprintf(what_different, "Чем %s отличается от %s ?", *left_buf, tree->data);
+    CALLOC(what_different, char, (strlen("Р§РµРј  РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚  ?") + strlen(*left_buf) + strlen(tree->data)));
+    sprintf(what_different, "Р§РµРј %s РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ %s ?", *left_buf, tree->data);
 
     CALLOC(*parent_buf, char, DATA_LEN + 1);
 
@@ -539,7 +550,7 @@ err make_description (Node* tree, const char* obj, char** description)
     }
     else
     {
-        const char* descr_temp = "Не нашел ничего по вашему запросу(((";
+        const char* descr_temp = "РќРµ РЅР°С€РµР» РЅРёС‡РµРіРѕ РїРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ(((";
         *description = (char*)calloc(strlen(descr_temp), sizeof(char));
         strcpy(*description, descr_temp);
     }
@@ -562,12 +573,12 @@ err fill_description (Stack* stk, char** description)
     for (size_t i = 0; i < stk->size; i++)
     {
         if (i < stk->size - 1 && (stk->data[i])->right == stk->data[i + 1])
-            strcat(*(description), "не ");
+            strcat(*(description), "РЅРµ ");
 
         strcat(*(description), stk->data[i]->data);
 
         if (i == (stk->size - 2))
-            strcat(*(description), "и");
+            strcat(*(description), "Рё");
 
         strcat(*(description), " ");
     }

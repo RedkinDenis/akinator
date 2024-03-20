@@ -84,6 +84,9 @@ void fill_window (wizard mood)
     else if (mood == PROUD)
         wizard_type = "proud_yakov.bmp";
 
+    else if (mood == FISH)
+        wizard_type = "fish_yakov.bmp";
+
     HDC wizard = txLoadImage (wizard_type);
 
     HDC Close = txLoadImage ("close.bmp");
@@ -109,10 +112,10 @@ void draw_YN_bt ()
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (YES_BUTTON);
-    txTextOut (yes.x1 + 60, yes.y1 + 10, "Да");
+    txTextOut (yes.x1 + 60, yes.y1 + 10, "Р”Р°");
 
     txRectangle (NO_BUTTON);
-    txTextOut (no.x1 + 50, no.y1 + 10, "Нет");
+    txTextOut (no.x1 + 50, no.y1 + 10, "РќРµС‚");
 }
 
 void draw_AKIN_bt ()
@@ -125,7 +128,7 @@ void draw_AKIN_bt ()
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (SKIP_BUTTON);
-    txTextOut (skip.x1 + 30, skip.y1 + 5, "Не знаю");
+    txTextOut (skip.x1 + 30, skip.y1 + 5, "РќРµ Р·РЅР°СЋ");
 
     draw_back_bt();
 }
@@ -141,11 +144,11 @@ void draw_back_bt ()
     txSelectFont ("Times New Roman", 80);
 
     txRectangle (BACK_BUTTON);
-    txTextOut (Back.x1 + 20, Back.y1 + 5, "Назад");
+    txTextOut (Back.x1 + 20, Back.y1 + 5, "РќР°Р·Р°Рґ");
 
     txSelectFont ("Times New Roman", 60);
     txRectangle (RESTART_BUTTON);
-    txTextOut (restart.x1 + 5, restart.y1 + 15, "В начало");
+    txTextOut (restart.x1 + 5, restart.y1 + 15, "Р’ РЅР°С‡Р°Р»Рѕ");
 }
 
 void draw_mode_bt ()
@@ -160,13 +163,13 @@ void draw_mode_bt ()
     txSelectFont ("Times New Roman", 60);
 
     txRectangle (GUESS_BUTTON);
-    txTextOut (guess.x1 + 10, guess.y1 + 15, "Отгадать");
+    txTextOut (guess.x1 + 10, guess.y1 + 15, "РЈРіР°РґР°С‚СЊ");
 
     txRectangle (DESCR_BUTTON);
-    txTextOut (describe.x1 + 10, describe.y1 + 15, "Описать");
+    txTextOut (describe.x1 + 10, describe.y1 + 15, "РћРїРёСЃР°С‚СЊ");
 
     txRectangle (SHOW_BUTTON);
-    txTextOut (show.x1 + 25, show.y1 + 10, "Выдать базу");
+    txTextOut (show.x1 + 25, show.y1 + 10, "Р’С‹РґР°С‚СЊ Р±Р°Р·Сѓ");
 }
 
 void draw_ADD_bt ()
@@ -179,7 +182,7 @@ void draw_ADD_bt ()
     txSelectFont ("Times New Roman", 60);
 
     txRectangle (ADD_BUTTON);
-    txTextOut (add.x1 + 25, add.y1 + 10, "Добавить");
+    txTextOut (add.x1 + 25, add.y1 + 10, "Р”РѕР±Р°РІРёС‚СЊ");
 }
 
 void say (void* data)
@@ -347,7 +350,7 @@ void put_answer (const char* data, wizard mood, int symb_lim)
 
 enum answer choose_mode ()
 {
-    put_answer("Выберите режим:", BASE);
+    put_answer("Р’С‹Р±РµСЂРёС‚Рµ СЂРµР¶РёРј:", BASE);
     draw_mode_bt();
 
     BUTTON_ guess = { GUESS_BUTTON };
@@ -391,11 +394,11 @@ int mouse_in (BUTTON_* bt)
 
 answer InputBox (char* data, const char* message, int data_len)
 {
-    const char* temp = txInputBox(message, "Помогите мне стать лучше");
+    const char* temp = txInputBox(message, "РџРѕРјРѕРіРёС‚Рµ РјРЅРµ СЃС‚Р°С‚СЊ Р»СѓС‡С€Рµ");
 
     char* try_again = (char*)calloc(
-            strlen("Это поле не может быть пустым!\n  \nПоследняя попытка!!!\nПотом игра прервется") + strlen(message), sizeof(char));
-    strcpy(try_again, "Это поле не может быть пустым!\n");
+            strlen("Р°Р±СЂР° РєР°РґР°Р±СЂР°!\n  \nР°Р±СЂР° РєР°РґР°Р±СЂР°!!!\nР°Р±СЂР° РєР°РґР°Р±СЂР°") + strlen(message), sizeof(char));
+    strcpy(try_again, "Р°Р±СЂР° РєР°РґР°Р±СЂР°!\n");
     strcat(try_again, message);
 
     int tryings = 2;
@@ -405,9 +408,9 @@ answer InputBox (char* data, const char* message, int data_len)
         if (tryings == 0)
             return ERR;
         if (tryings == 1)
-            strcat(try_again, "\nПоследняя попытка!!!\nПотом игра прервется");
+            strcat(try_again, "\nРџРѕСЃР»РµРґРЅСЏСЏ РїРѕРїС‹С‚РєР°!!!\nР”Р°Р»РµРµ РёРіСЂР° РїСЂРµСЂРІРµС‚СЃСЏ");
 
-        temp = txInputBox(try_again, "Помогите мне стать лучше");
+        temp = txInputBox(try_again, "РџРѕРјРѕРіРёС‚Рµ РјРЅРµ СЃС‚Р°С‚СЊ Р»СѓС‡С€Рµ");
         tryings--;
     }
 
