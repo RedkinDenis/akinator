@@ -57,4 +57,6 @@ void put_question (char* data, wizard mood);
 
 void put_answer (const char* data, wizard mood, int symb_lim = 0);
 
+void draw_picture (Node* tree);
+
 #endif //INTERFACE_H

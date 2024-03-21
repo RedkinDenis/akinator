@@ -343,6 +343,21 @@ answer check_add ()
     return ERR;
 }
 
+void draw_picture (Node* tree)
+{
+    if (strlen(tree->picture) == 0)
+        return;
+
+    char* pict = (char*)calloc(strlen(tree->picture) + strlen("pictures\\"), sizeof(char));
+
+    strcpy(pict, "pictures\\");
+    strcat(pict, tree->picture);
+
+    HDC picture = txLoadImage (pict);
+
+    txBitBlt  (txDC(), 1020, 50, 0, 0, picture, 0, 0);
+}
+
 void put_answer (const char* data, wizard mood, int symb_lim)
 {
     txClear();

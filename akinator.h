@@ -17,6 +17,7 @@ enum sub_tree
 struct Node
 {
     data_t data = 0;
+    char* picture = NULL;
     Node* left = NULL;
     Node* right = NULL;
     Node* parent = NULL;

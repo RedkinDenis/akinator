@@ -328,6 +328,7 @@ err run_guess (Node* tree, int* run)
         {
             char* question = make_question(tree->data);
             put_question (question, UNDERSTAND);
+            draw_picture (tree);
             free(question);
 
             ans = check_answer(YN);

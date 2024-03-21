@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "input_output.h"
+#include <dirent.h>
 
 #define CHANGE_NODE(from, to)        \
     do                               \
@@ -31,9 +32,13 @@ static err print_tree__ (Node* head, int* tab);
 
 static err fprint_tree__ (FILE* out, Node* head, int* tab);
 
+static void find_advert();
+
 advertisement input_ad ()
 {
-    FILE* read = fopen("advert\\advert.txt", "rb");
+    find_advert();
+    
+    FILE* read = fopen("advert.txt", "rb");
     int fsize = GetFileSize(read);
 
     advertisement ad = {};
@@ -41,17 +46,29 @@ advertisement input_ad ()
 
     ad.banners = InputData(read, fsize, &(ad.qant)); 
 
-    // printf("advert: \n");
-    // printf("ptr - %d \n", ad.ptr);
-    // printf("qant - %d \n", ad.qant);
-    // for (int i = 0; i < ad.qant; i++)
-    // {
-    //     printf("%d - %s \n", i, ad.banners->str);
-    // }
-
     fclose(read);
 
     return ad;
+}
+
+void find_advert()
+{
+    FILE* write = fopen("advert.txt", "wb");
+
+    struct dirent *dp;
+    DIR *dir = opendir(".\\advert");
+ 
+    if (!dir) 
+        return; 
+ 
+    dp = readdir(dir);
+    dp = readdir(dir);
+    while ((dp = readdir(dir)) != NULL)
+        fprintf(write, "%s\n", dp->d_name);
+    
+    closedir(dir);
+    fclose(write);
+    return;
 }
 
 struct line* InputData(FILE* fp, int fsize, int* n)    
@@ -177,13 +194,13 @@ void draw_tree_2 (FILE* save, Node* tree)
 {
     if (tree->left != NULL)
     {
-        fprintf(save, "    %d -> %d [ color=green label=Р”Р° fontcolor=green ];\n", tree->num_in_tree, (tree->left)->num_in_tree);
+        fprintf(save, "    %d -> %d [ color=green label=Да fontcolor=green ];\n", tree->num_in_tree, (tree->left)->num_in_tree);
         draw_tree_2(save, tree->left);
     }
 
     if (tree->right != NULL)
     {
-        fprintf(save, "    %d -> %d [ color=red label=РќРµС‚ fontcolor=red ];\n", tree->num_in_tree, (tree->right)->num_in_tree);
+        fprintf(save, "    %d -> %d [ color=red label=Нет fontcolor=red ];\n", tree->num_in_tree, (tree->right)->num_in_tree);
         draw_tree_2(save, tree->right);
     }
 
@@ -295,7 +312,6 @@ err importTree (FILE* read, Node* tree)
     {
         ptr++;
         level++;
-
         get_data(buf, &ptr, tree, DATA_LEN);
     }
 
@@ -356,5 +372,23 @@ void get_data(char* buf, int* ptr, Node* tree, int data_len)
         i++;
     }
 
+    *ptr += 1;
+    while((buf[*ptr] != '(') && (buf[*ptr] != ')') && (buf[*ptr] != '*') )
+        *ptr += 1;
+
+    if (buf[*ptr] != '*')
+        return;
+    
+    tree->picture = (char*)calloc(data_len + 1, sizeof(char));
+    i = 0;
+    //printf("%s\n", buf + *ptr);
+    *ptr += 1;
+    while ((buf[*ptr] != '*') && i <= data_len)
+    {
+        tree->picture[i] = buf[*ptr];
+        *ptr += 1;
+        i++;
+        //printf("here");
+    }
     goto_prace(buf, ptr);
 }
