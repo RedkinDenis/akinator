@@ -49,7 +49,7 @@ static err add_node (Node* tree);
 
 static err get_info (Node* tree, char** left_buf, char** parent_buf);
 
-static err ask (char* data);
+static err ask (char* data, advertisement* advert = 0);
 
 static char* make_question (char* data);
 
@@ -73,37 +73,30 @@ static void choose_subtree (Node** tree, Stack* stk);
 
 int main(int argc, char* argv[])
 {
-    try
-    {
-        FOPEN(read, "rtTree.txt", "rb");
+    FOPEN(read, "rtTree.txt", "rb");
 
-        Node* tree = {};
+    Node* tree = {};
 
-        CALLOC(tree, Node, 1);
-        CALLOC(tree->data, char, DATA_LEN + 1);
+    CALLOC(tree, Node, 1);
+    CALLOC(tree->data, char, DATA_LEN + 1);
 
-        importTree(read, tree);
+    importTree(read, tree);
 
-        fclose(read);
+    fclose(read);
 
-        create_window ();
+    create_window ();
 
-        int run = 1;
+    int run = 1;
 
-        mode md = choose_game_mode(argc, argv);
+    mode md = choose_game_mode(argc, argv);
 
-        if (md == GOD)
-            while (run == 1)
-                change_tree(tree, &run);
+    if (md == GOD)
+        while (run == 1)
+            change_tree(tree, &run);
 
-        else
-            while (run == 1)
-                running(tree, &run);
-
-        tree_kill(tree);
-    }
-
-    catch (...) { printf ("UNHANDLED EXCEPTION"); }
+    else
+        while (run == 1)
+            running(tree, &run);
 
     //print_tree(tree);
 
@@ -113,7 +106,7 @@ int main(int argc, char* argv[])
 
     fclose(out);*/
 
-    //tree_kill(tree);
+    tree_kill(tree);
 }
 
 mode choose_game_mode (int argc, char* argv[])
@@ -285,7 +278,7 @@ err running(Node* tree, int* run)
     else if (ans == SHOW)
     {
         put_answer ("Вот!", FISH);
-        mySleep(1500);
+        mySleep(1000);
         draw_tree(tree);
         mySleep(5000);
     }
@@ -307,12 +300,13 @@ err run_guess (Node* tree, int* run)
 {
     Stack dont_know = {};
     stack_ctor(&dont_know, 1);
-
     answer ans = ERR;
+
+    advertisement advert = input_ad();    
 
     while (tree->right != NULL && tree->left != NULL)
     {
-        ask(tree->data);
+        ask(tree->data, &advert);
 
         ans = check_answer(YNDN);
 
@@ -418,7 +412,7 @@ char* make_question (char* data)
     return question;
 }
 
-err ask (char* data)
+err ask (char* data, advertisement* advert)
 {
     char* qst = 0;
 
@@ -429,6 +423,8 @@ err ask (char* data)
         qst[i] = (char)tolower(qst[i]);
 
     put_question (qst, THINKING);
+
+    draw_advert(advert);
 
     return SUCCESS;
 }

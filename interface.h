@@ -1,6 +1,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include "input_output.h"
+
 enum answer
 {
     YES = 1,
@@ -22,7 +24,8 @@ enum wizard
     UNDERSTAND = 2,
     CONFUSED = 3,
     BASE = 4,
-    PROUD = 5
+    PROUD = 5,
+    FISH = 6
 };
 
 enum ans_mode
@@ -31,6 +34,8 @@ enum ans_mode
     YNDN = 2,
     YNBR = 3
 };
+
+void draw_advert (advertisement* advert);
 
 void mySleep (int time);
 

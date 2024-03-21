@@ -1,10 +1,11 @@
-#include "interface.h"
-
 #define  TX_USE_SPEAK
 #include "..\TXLib.h"
 
+#include "interface.h"
+
 #include "TXWave.h"
 #include <time.h>
+//#include "input_output.h"
 
 #define YES_BUTTON txGetExtentX() / 2 - 250, txGetExtentY() * 6 / 10, txGetExtentX() / 2 - 50, txGetExtentY() * 6 / 10 + 100
 
@@ -20,11 +21,11 @@
 
 #define CLOSE_BUTTON txGetExtentX() - 50, 0, txGetExtentX(), 37
 
-#define BACK_BUTTON txGetExtentX() - 300, 250, txGetExtentX() - 100, 350
+#define BACK_BUTTON txGetExtentX() - 300, 450, txGetExtentX() - 100, 550
 
-#define RESTART_BUTTON txGetExtentX() - 300, 400, txGetExtentX() - 100, 500
+#define RESTART_BUTTON txGetExtentX() - 300, 600, txGetExtentX() - 100, 700
 
-#define ADD_BUTTON txGetExtentX() - 300, 550, txGetExtentX() - 100, 650
+#define ADD_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() * 3 / 4, txGetExtentX() / 2 + 150, txGetExtentY() * 3 / 4 + 80
 
 #define FILD_COLOR RGB(177, 71, 74)
 
@@ -65,31 +66,31 @@ void create_window ()
 
 void fill_window (wizard mood)
 {
-    HDC background = txLoadImage ("background.bmp");
+    HDC background = txLoadImage ("interface\\background.bmp");
 
     const char* wizard_type = 0;
 
     if (mood == UNDERSTAND)
-        wizard_type = "understand_yakov.bmp";
+        wizard_type = "yakov\\understand_yakov.bmp";
 
     else if (mood == THINKING)
-        wizard_type = "thinking_wizard.bmp";
+        wizard_type = "yakov\\thinking_wizard.bmp";
 
     else if (mood == BASE)
-        wizard_type = "base_yakov.bmp";
+        wizard_type = "yakov\\base_yakov.bmp";
 
     else if (mood == CONFUSED)
-        wizard_type = "confused_wizard.bmp";
+        wizard_type = "yakov\\confused_wizard.bmp";
 
     else if (mood == PROUD)
-        wizard_type = "proud_yakov.bmp";
+        wizard_type = "yakov\\proud_yakov.bmp";
 
     else if (mood == FISH)
-        wizard_type = "fish_yakov.bmp";
+        wizard_type = "yakov\\fish_yakov.bmp";
 
     HDC wizard = txLoadImage (wizard_type);
 
-    HDC Close = txLoadImage ("close.bmp");
+    HDC Close = txLoadImage ("interface\\close.bmp");
 
     txBitBlt (txDC(), 0, 0, txGetExtentX(), txGetExtentY(), background, 0, 0);
 
@@ -99,6 +100,29 @@ void fill_window (wizard mood)
     txTransparentBlt (txDC(), close.x1, 0, 0, 0, Close, 0, 0);
 
     txDeleteDC (background);
+}
+
+void draw_advert (advertisement* advert)
+{
+    if (GetKeyState(VK_CAPITAL))
+        return;
+
+    int rnd = rand() % 2;
+    if (rnd == 1)
+        return;
+
+    char* ad_name = (char*)calloc(strlen(advert->banners->str) + strlen("advert\\") + 1, sizeof(char));
+    strcpy(ad_name, "advert\\");
+    strcat(ad_name, advert->banners->str);
+
+    HDC adv = txLoadImage (ad_name);
+    txBitBlt (txDC(), 1000, 80, 0, 0, adv, 0, 0); 
+
+    advert->ptr++;
+    if (advert->ptr == advert->qant)
+        advert->ptr = 0;
+
+    return;
 }
 
 void draw_YN_bt ()

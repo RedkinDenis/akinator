@@ -16,6 +16,7 @@
     level++;                         \
     } while(0)
 
+
 static err fill_buffer (FILE* read, char** buf);
 
 static void get_data (char* buf, int* ptr, Node* tree, int data_len);
@@ -30,6 +31,88 @@ static err print_tree__ (Node* head, int* tab);
 
 static err fprint_tree__ (FILE* out, Node* head, int* tab);
 
+advertisement input_ad ()
+{
+    FILE* read = fopen("advert\\advert.txt", "rb");
+    int fsize = GetFileSize(read);
+
+    advertisement ad = {};
+    ad.ptr = 0;
+
+    ad.banners = InputData(read, fsize, &(ad.qant)); 
+
+    // printf("advert: \n");
+    // printf("ptr - %d \n", ad.ptr);
+    // printf("qant - %d \n", ad.qant);
+    // for (int i = 0; i < ad.qant; i++)
+    // {
+    //     printf("%d - %s \n", i, ad.banners->str);
+    // }
+
+    fclose(read);
+
+    return ad;
+}
+
+struct line* InputData(FILE* fp, int fsize, int* n)    
+{
+    char* buffer = (char*)calloc(fsize + 1, sizeof(char));
+    int nLines = 0;
+
+    int rsize = fread(buffer, sizeof(char), fsize, fp);
+    assert(rsize == fsize);
+
+    if(buffer[rsize - 1] != '\n')
+        buffer[rsize] = '\n';
+    else
+        buffer[rsize] = '\0';
+
+    for(int i = 0; i < rsize + 1; i++)
+    {
+        if(buffer[i] == '\r')
+        {
+            buffer[i] = '\0';
+            i += 1;
+            buffer[i] = '\0';
+            nLines++;
+        }
+        else if(buffer[i] == '\n')
+        {
+            nLines++;
+            buffer[i] = '\0';
+        }
+    }
+    struct line* data = (struct line*)calloc(nLines, sizeof(struct line));
+
+    int j = 0;
+    int oldind = 0;
+
+    data[j].str = buffer;
+    j++;
+    for(int i = 0; i < rsize + 1; i++)
+    {
+        if(buffer[i] == '\0')
+        {
+            if(j <= nLines)
+            {
+                data[j].str = buffer + i + 1;
+                data[j - 1].len = i - oldind;
+                oldind = i + 1;
+
+                if(buffer[i + 1] == '\0')
+                {
+                    data[j].str++;
+                    i++;
+                    oldind++;
+                }
+                j++;
+            }
+        }
+    }
+
+    *n = nLines;
+    return data;
+}
 
 int GetFileSize(FILE* fp)
 {
@@ -38,35 +121,6 @@ int GetFileSize(FILE* fp)
     int fsize = ftell(fp);
     fseek(fp, startPos, SEEK_SET);
     return fsize;
-}
-
-void input_qst(char* data, int data_len)
-{
-    int i = 0;
-    scanf("%c", data + i);
-
-    while((data[i] != '\n') && (i < data_len - 2))
-    {
-        i++;
-        scanf("%c", data + i);
-    }
-    data[i] = '\?';
-    i++;
-    data[i] = '\0';
-}
-
-void input_name(char* data, int data_len)
-{
-    int i = 0;
-    getchar();
-    scanf("%c", data + i);
-
-    while((data[i] != '\n') && (i < data_len - 1))
-    {
-        i++;
-        scanf("%c", data + i);
-    }
-    data[i] = '\0';
 }
 
 err draw_tree (Node* tree)
@@ -123,13 +177,13 @@ void draw_tree_2 (FILE* save, Node* tree)
 {
     if (tree->left != NULL)
     {
-        fprintf(save, "    %d -> %d [ color=green label=�� fontcolor=green ];\n", tree->num_in_tree, (tree->left)->num_in_tree);
+        fprintf(save, "    %d -> %d [ color=green label=Р”Р° fontcolor=green ];\n", tree->num_in_tree, (tree->left)->num_in_tree);
         draw_tree_2(save, tree->left);
     }
 
     if (tree->right != NULL)
     {
-        fprintf(save, "    %d -> %d [ color=red label=��� fontcolor=red ];\n", tree->num_in_tree, (tree->right)->num_in_tree);
+        fprintf(save, "    %d -> %d [ color=red label=РќРµС‚ fontcolor=red ];\n", tree->num_in_tree, (tree->right)->num_in_tree);
         draw_tree_2(save, tree->right);
     }
 
