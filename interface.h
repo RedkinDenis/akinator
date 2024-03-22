@@ -35,7 +35,7 @@ enum ans_mode
     YNBR = 3
 };
 
-void draw_advert (advertisement* advert);
+void draw_advert (void* Advert);
 
 void mySleep (int time);
 

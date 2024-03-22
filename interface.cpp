@@ -1,4 +1,5 @@
 #define  TX_USE_SPEAK
+#define _TX_SKIP_EXCEPTION EXCEPTION_CPP_MSC
 #include "..\TXLib.h"
 
 #include "interface.h"
@@ -65,45 +66,56 @@ void create_window ()
 }
 
 void fill_window (wizard mood)
-{
+{ 
     HDC background = txLoadImage ("interface\\background.bmp");
-
-    const char* wizard_type = 0;
-
-    if (mood == UNDERSTAND)
-        wizard_type = "yakov\\understand_yakov.bmp";
-
-    else if (mood == THINKING)
-        wizard_type = "yakov\\thinking_wizard.bmp";
-
-    else if (mood == BASE)
-        wizard_type = "yakov\\base_yakov.bmp";
-
-    else if (mood == CONFUSED)
-        wizard_type = "yakov\\confused_wizard.bmp";
-
-    else if (mood == PROUD)
-        wizard_type = "yakov\\proud_yakov.bmp";
-
-    else if (mood == FISH)
-        wizard_type = "yakov\\fish_yakov.bmp";
-
-    HDC wizard = txLoadImage (wizard_type);
-
-    HDC Close = txLoadImage ("interface\\close.bmp");
+    if (!background)
+        printf("error in open of background");
 
     txBitBlt (txDC(), 0, 0, txGetExtentX(), txGetExtentY(), background, 0, 0);
+    txDeleteDC (background);
+
+    char* wizard_type = (char*)calloc(DATA_LEN + 1, sizeof(char));
+
+    if (mood == UNDERSTAND)
+        strcpy(wizard_type, "yakov\\understand_yakov.bmp");
+
+    else if (mood == THINKING)
+        strcpy(wizard_type, "yakov\\thinking_wizard.bmp");
+
+    else if (mood == BASE)
+        strcpy(wizard_type, "yakov\\base_yakov.bmp");
+
+    else if (mood == CONFUSED)
+        strcpy(wizard_type, "yakov\\confused_wizard.bmp");
+
+    else if (mood == PROUD)
+        strcpy(wizard_type, "yakov\\proud_yakov.bmp");
+
+    else if (mood == FISH)
+        strcpy(wizard_type, "yakov\\fish_yakov.bmp");
+
+    HDC wizard = txLoadImage (wizard_type);
+    free(wizard_type);
+    if (!wizard)
+        printf("error in open of wizard");
 
     txTransparentBlt (txDC(), 0, 90, 0, 0, wizard, 0, 0);
+    txDeleteDC (wizard);
+
+    HDC Close = txLoadImage ("interface\\close.bmp");
+    if (!Close)
+        printf("error in open of Close");
 
     BUTTON_ close = { CLOSE_BUTTON };
     txTransparentBlt (txDC(), close.x1, 0, 0, 0, Close, 0, 0);
-
-    txDeleteDC (background);
+    txDeleteDC (Close);
 }
 
-void draw_advert (advertisement* advert)
+void draw_advert (void* Advert)
 {
+    advertisement* advert = (advertisement*)Advert;
+    srand ( (unsigned)time(NULL) );
+
     if (GetKeyState(VK_CAPITAL))
         return;
 
@@ -111,17 +123,50 @@ void draw_advert (advertisement* advert)
     if (rnd == 1)
         return;
 
-    char* ad_name = (char*)calloc(strlen(advert->banners->str) + strlen("advert\\") + 1, sizeof(char));
+    char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr].str) + strlen("advert\\") + 1, sizeof(char));
     strcpy(ad_name, "advert\\");
-    strcat(ad_name, advert->banners->str);
+    strcat(ad_name, advert->banners[advert->ptr].str);
 
     HDC adv = txLoadImage (ad_name);
-    txBitBlt (txDC(), 1000, 80, 0, 0, adv, 0, 0); 
+
+    free(ad_name);
+
+    RGBQUAD* temp = (RGBQUAD*)calloc(1520 * 780, sizeof(RGBQUAD));
+
+    int x = rand() % (1520 - txGetExtentX()) + 5, y = rand() % (780 - txGetExtentY()) + 5;
+    int m = min(x, y);
+    x -= m; y -= m;
+
+    int dx = rand() % 4 + 1, dy = rand() % 4 + 1;
+    
+    txBegin();
+    while (1)
+    {   
+        memcpy(temp, txVideoMemory(), sizeof(RGBQUAD) * 1520 * 780);
+
+        txBitBlt (txDC(), x, y, 0, 0, adv, 0, 0);
+        txRedrawWindow ();
+
+        if (txMouseButtons() == 1)
+            break;
+
+        txSleep(10); 
+        memcpy(txVideoMemory(), temp, sizeof(RGBQUAD) * 1520 * 780);
+
+        x += dx;    y += dy;
+        if (x >= 1520 - txGetExtentX(adv) || x < 0)
+            dx = -dx;
+        if (y >= 780 - txGetExtentY(adv) || y < 0)
+            dy = -dy;
+    }
+    txEnd();
+    txDeleteDC (adv);
+    
+    free(temp);
 
     advert->ptr++;
     if (advert->ptr == advert->qant)
         advert->ptr = 0;
-
     return;
 }
 
@@ -212,31 +257,6 @@ void draw_ADD_bt ()
 void say (void* data)
 {
     txSpeak("%s", (const char*)data);
-}
-
-void put_question (char* data, wizard mood)
-{
-    _beginthread (say, 0, data);
-
-    txClear();
-    fill_window(mood);
-    draw_YN_bt();
-
-    txSetFillColor (FILD_COLOR);
-
-    int data_len = (int)strlen(data);
-    int wide_coeff = 0;
-    if (data_len < 10)
-        wide_coeff = 10;
-    else
-        wide_coeff = 9;
-
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
-    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
-
-    txSetColor (TX_BLACK);
-    txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
 }
 
 enum answer check_answer (ans_mode mode)
@@ -345,7 +365,7 @@ answer check_add ()
 
 void draw_picture (Node* tree)
 {
-    if (strlen(tree->picture) == 0)
+    if (tree->picture == NULL)
         return;
 
     char* pict = (char*)calloc(strlen(tree->picture) + strlen("pictures\\"), sizeof(char));
@@ -356,13 +376,14 @@ void draw_picture (Node* tree)
     HDC picture = txLoadImage (pict);
 
     txBitBlt  (txDC(), 1020, 50, 0, 0, picture, 0, 0);
+
+    txDeleteDC (picture);
 }
 
 void put_answer (const char* data, wizard mood, int symb_lim)
-{
-    txClear();
+{   
     fill_window(mood);
-
+    //txClear();
     txSetFillColor (FILD_COLOR);
 
     int data_len = (int)strlen(data);
@@ -378,6 +399,31 @@ void put_answer (const char* data, wizard mood, int symb_lim)
 
     if(symb_lim != 0)
         data_len = symb_lim;
+
+    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
+    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
+
+    txSetColor (TX_BLACK);
+    txSelectFont ("Comic Sans MS", 40);
+    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
+}
+
+void put_question (char* data, wizard mood)
+{
+    //_beginthread (say, 0, data);
+
+    fill_window(mood);
+    //txClear();
+    draw_YN_bt();
+
+    txSetFillColor (FILD_COLOR);
+
+    int data_len = (int)strlen(data);
+    int wide_coeff = 0;
+    if (data_len < 10)
+        wide_coeff = 10;
+    else
+        wide_coeff = 9;
 
     txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);

@@ -10,6 +10,8 @@
 #include "..\err_codes.h"
 #include "UDL.h"
 #include "stack.h"
+#include <process.h>
+#include <time.h>
 
 #define CHECK_FOR_CLOSE(ans, run)    \
     do                               \
@@ -79,6 +81,7 @@ int main(int argc, char* argv[])
 
     CALLOC(tree, Node, 1);
     CALLOC(tree->data, char, DATA_LEN + 1);
+    //CALLOC(tree->picture, char, DATA_LEN + 1);
 
     importTree(read, tree);
 
@@ -321,7 +324,7 @@ err run_guess (Node* tree, int* run)
         else if (ans == SKIP)
             choose_subtree(&tree, &dont_know);
 
-         if (check_back_restart(ans, &tree, &dont_know) == FAIL)
+        if (check_back_restart(ans, &tree, &dont_know) == FAIL)
             return SUCCESS;
 
         if (tree->right == NULL && tree->left == NULL)
@@ -358,6 +361,9 @@ err run_guess (Node* tree, int* run)
         }
     }
     stack_dtor(&dont_know);
+
+    //delete_ad(&advert);
+
     mySleep(5000);
     return SUCCESS;
 }
@@ -399,6 +405,8 @@ err tree_kill (Node* head)
     if (head->right != NULL)
         tree_kill(head->right);
 
+    free(head->data);
+    free(head->picture);
     free(head);
     return SUCCESS;
 }
@@ -416,20 +424,20 @@ char* make_question (char* data)
 err ask (char* data, advertisement* advert)
 {
     char* qst = 0;
-
-    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data)));
-    strcat(qst, "Ваш объект ");
-    strcat(qst, data);
-    for (int i = 1; i < strlen(qst); i++)
+    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data) + 1));
+    
+    strcpy(qst, "Ваш объект ");
+    strcpy(qst + strlen("Ваш объект "), data);
+    for (int i = 1; i < strlen("Ваш объект ") + strlen(data) + 1; i++)
         qst[i] = (char)tolower(qst[i]);
 
     put_question (qst, THINKING);
-
-    draw_advert(advert);
-
-    return SUCCESS;
-}
-
+    
+    //free(qst);
+    
+    //_beginthread (draw_advert, 0, advert);
+    return SUCCESS;                            
+}                                                
 err add_node (Node* tree)
 {
     char* left_buf = 0;
@@ -512,6 +520,8 @@ void other_subtree (Node** tree, Stack* stk)
 
 void choose_subtree (Node** tree, Stack* stk)
 {
+    srand ((unsigned)time(NULL));
+    
     if (rand() % 2 == 0)
         (*tree)->st = left;
     else
@@ -553,8 +563,8 @@ err make_description (Node* tree, const char* obj, char** description)
     }
 
     split_str(description);
-
     stack_dtor(&stk);
+
     return res;
 }
 

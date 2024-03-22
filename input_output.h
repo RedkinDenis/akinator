@@ -20,6 +20,8 @@ struct advertisement
 
 advertisement input_ad ();
 
+void delete_ad (advertisement* advert);
+
 struct line* InputData(FILE* fp, int fsize, int* n);
 
 void input_name (char* data, int data_len);

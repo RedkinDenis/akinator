@@ -45,9 +45,11 @@ advertisement input_ad ()
     ad.ptr = 0;
 
     ad.banners = InputData(read, fsize, &(ad.qant)); 
+    // printf("qant = %d\n", ad.qant);
+    // for (int i = 0; i < ad.qant; i++)
+    //     printf("%s \n", ad.banners[i].str);
 
     fclose(read);
-
     return ad;
 }
 
@@ -69,6 +71,16 @@ void find_advert()
     closedir(dir);
     fclose(write);
     return;
+}
+
+void delete_ad (advertisement* advert)
+{
+    for (int i = 0; i < advert->qant; i++)
+    {
+        free(advert->banners[i].str);
+        free(advert->banners + i);
+    }
+    free(advert);
 }
 
 struct line* InputData(FILE* fp, int fsize, int* n)    
@@ -312,6 +324,7 @@ err importTree (FILE* read, Node* tree)
     {
         ptr++;
         level++;
+        //CALLOC(tree->picture, char, DATA_LEN + 1);
         get_data(buf, &ptr, tree, DATA_LEN);
     }
 
@@ -323,6 +336,7 @@ err importTree (FILE* read, Node* tree)
 
             CHANGE_NODE(tree, tree->left);
             CALLOC(tree->data, char, DATA_LEN + 1);
+            //CALLOC(tree->picture, char, DATA_LEN + 1);
 
             get_data(buf, &ptr, tree, DATA_LEN);
         }
@@ -344,11 +358,13 @@ err importTree (FILE* read, Node* tree)
 
                 CHANGE_NODE(tree, tree->right);
                 CALLOC(tree->data, char, DATA_LEN + 1);
+                //CALLOC(tree->picture, char, DATA_LEN + 1);
 
                 get_data(buf, &ptr, tree, DATA_LEN);
             }
         }
     }
+    free(buf);
 
     return SUCCESS;
 }
