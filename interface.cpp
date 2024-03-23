@@ -133,30 +133,30 @@ void draw_advert (void* Advert)
 
     HDC save = txCreateCompatibleDC (1520, 780);
 
-    int x = rand() % (1520 - txGetExtentX(adv)) + 5, y = rand() % (780 - txGetExtentY(adv)) + 5;
+    int x = 200, y = rand() % (780 - txGetExtentY(adv)) + 5;
     int m = min(x, y);
     x -= m; y -= m;
 
-    int dx = rand() % 4 + 1, dy = rand() % 4 + 1;
+    int t = 1;
+    int dy = 2;
     
     txBitBlt (save, 0, 0, 1520, 780, txDC(), 0, 0);
     txBegin();
     while (1)
     {   
-        txBitBlt (txDC(), x, y, 0, 0, adv, 0, 0);
+        txBitBlt (txDC(), x + (t%5-1) * 5, y + (t%3-1) * 5, 0, 0, adv, 0, 0);
         txRedrawWindow ();
 
         if (txMouseButtons() == 1)
             break;
 
-        txSleep(10); 
+        txSleep(30); 
         txBitBlt (txDC(), 0, 0, 1520, 780, save, 0, 0);
 
-        x += dx;    y += dy;
-        if (x >= 1520 - txGetExtentX(adv) || x < 0)
-            dx = -dx;
-        if (y >= 780 - txGetExtentY(adv) || y < 0)
-            dy = -dy;
+        y += dy;
+        if (y >= txGetExtentY())
+            break;
+        t++;
     }
     txEnd();
     txDeleteDC (adv);

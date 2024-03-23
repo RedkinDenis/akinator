@@ -114,7 +114,6 @@ int main(int argc, char* argv[])
 
 mode choose_game_mode (int argc, char* argv[])
 {
-    //const char* password = "god";
     if(argc == 1)
         return USER;
 
@@ -433,9 +432,9 @@ err ask (char* data, advertisement* advert)
 
     put_question (qst, THINKING);
     
-    //free(qst);
+    free(qst);
     
-    //_beginthread (draw_advert, 0, advert);
+    _beginthread (draw_advert, 0, advert);
     return SUCCESS;                            
 }                                                
 err add_node (Node* tree)
