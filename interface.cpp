@@ -120,8 +120,8 @@ void draw_advert (void* Advert)
         return;
 
     int rnd = rand() % 2;
-    if (rnd == 1)
-        return;
+    // if (rnd == 1)
+    //     return;
 
     char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr].str) + strlen("advert\\") + 1, sizeof(char));
     strcpy(ad_name, "advert\\");
@@ -131,19 +131,18 @@ void draw_advert (void* Advert)
 
     free(ad_name);
 
-    RGBQUAD* temp = (RGBQUAD*)calloc(1520 * 780, sizeof(RGBQUAD));
+    HDC save = txCreateCompatibleDC (1520, 780);
 
-    int x = rand() % (1520 - txGetExtentX()) + 5, y = rand() % (780 - txGetExtentY()) + 5;
+    int x = rand() % (1520 - txGetExtentX(adv)) + 5, y = rand() % (780 - txGetExtentY(adv)) + 5;
     int m = min(x, y);
     x -= m; y -= m;
 
     int dx = rand() % 4 + 1, dy = rand() % 4 + 1;
     
+    txBitBlt (save, 0, 0, 1520, 780, txDC(), 0, 0);
     txBegin();
     while (1)
     {   
-        memcpy(temp, txVideoMemory(), sizeof(RGBQUAD) * 1520 * 780);
-
         txBitBlt (txDC(), x, y, 0, 0, adv, 0, 0);
         txRedrawWindow ();
 
@@ -151,7 +150,7 @@ void draw_advert (void* Advert)
             break;
 
         txSleep(10); 
-        memcpy(txVideoMemory(), temp, sizeof(RGBQUAD) * 1520 * 780);
+        txBitBlt (txDC(), 0, 0, 1520, 780, save, 0, 0);
 
         x += dx;    y += dy;
         if (x >= 1520 - txGetExtentX(adv) || x < 0)
@@ -162,7 +161,7 @@ void draw_advert (void* Advert)
     txEnd();
     txDeleteDC (adv);
     
-    free(temp);
+    txDeleteDC(save);
 
     advert->ptr++;
     if (advert->ptr == advert->qant)
@@ -413,6 +412,7 @@ void put_question (char* data, wizard mood)
     //_beginthread (say, 0, data);
 
     fill_window(mood);
+    // printf("%llu \n", sizeof(RGBQUAD) * 1520 * 780);
     //txClear();
     draw_YN_bt();
 
