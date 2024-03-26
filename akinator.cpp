@@ -51,7 +51,7 @@ static err add_node (Node* tree);
 
 static err get_info (Node* tree, char** left_buf, char** parent_buf);
 
-static err ask (char* data, advertisement* advert = 0);
+static err ask (char* data, advertisement* advert = NULL);
 
 static char* make_question (char* data);
 
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 {
     FOPEN(read, "rtTree.txt", "rb");
 
-    Node* tree = {};
+    Node* tree = NULL;
 
     CALLOC(tree, Node, 1);
     CALLOC(tree->data, char, DATA_LEN + 1);
@@ -304,10 +304,13 @@ err run_guess (Node* tree, int* run)
     stack_ctor(&dont_know, 1);
     answer ans = ERR;
 
-    advertisement advert = input_ad();    
+    advertisement advert = {};
+    find_advert(&advert);    
 
     while (tree->right != NULL && tree->left != NULL)
     {
+
+        //printf("@@@@@\n");
         ask(tree->data, &advert);
 
         ans = check_answer(YNDN);
@@ -423,7 +426,7 @@ char* make_question (char* data)
 err ask (char* data, advertisement* advert)
 {
     char* qst = 0;
-    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data) + 1));
+    CALLOC(qst, char, (strlen("Ваш объект ") + strlen(data) + 2000));
     
     strcpy(qst, "Ваш объект ");
     strcpy(qst + strlen("Ваш объект "), data);
@@ -434,7 +437,8 @@ err ask (char* data, advertisement* advert)
     
     free(qst);
     
-    _beginthread (draw_advert, 0, advert);
+    if (advert != NULL)
+        _beginthread (draw_advert, 0, advert);
     return SUCCESS;                            
 }                                                
 err add_node (Node* tree)

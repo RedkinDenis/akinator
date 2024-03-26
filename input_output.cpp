@@ -17,6 +17,7 @@
     level++;                         \
     } while(0)
 
+#define MAX_ADVERT_QANT 10
 
 static err fill_buffer (FILE* read, char** buf);
 
@@ -32,55 +33,39 @@ static err print_tree__ (Node* head, int* tab);
 
 static err fprint_tree__ (FILE* out, Node* head, int* tab);
 
-static void find_advert();
-
-advertisement input_ad ()
+void find_advert(advertisement* advert)
 {
-    find_advert();
-    
-    FILE* read = fopen("advert.txt", "rb");
-    int fsize = GetFileSize(read);
+    // advert = (advertisement*)calloc(1, sizeof(advert));
+    advert->banners = (char**)calloc(MAX_ADVERT_QANT, sizeof(char*));
 
-    advertisement ad = {};
-    ad.ptr = 0;
-
-    ad.banners = InputData(read, fsize, &(ad.qant)); 
-    // printf("qant = %d\n", ad.qant);
-    // for (int i = 0; i < ad.qant; i++)
-    //     printf("%s \n", ad.banners[i].str);
-
-    fclose(read);
-    return ad;
-}
-
-void find_advert()
-{
-    FILE* write = fopen("advert.txt", "wb");
-
-    struct dirent *dp;
+    struct dirent *dp = NULL;
     DIR *dir = opendir(".\\advert");
  
     if (!dir) 
         return; 
  
-    dp = readdir(dir);
-    dp = readdir(dir);
+    int n = 0;
     while ((dp = readdir(dir)) != NULL)
-        fprintf(write, "%s\n", dp->d_name);
+    {
+        if (strcmp(dp->d_name, ".")  == 0 ||
+            strcmp(dp->d_name, "..") == 0 ||
+            strstr(dp->d_name, ".bmp") == NULL)
+            continue;
+
+        advert->banners[n] = strdup(dp->d_name);
+        n++;        
+    } 
+    advert->qant = n;   
     
     closedir(dir);
-    fclose(write);
     return;
 }
 
 void delete_ad (advertisement* advert)
 {
-    for (int i = 0; i < advert->qant; i++)
-    {
-        free(advert->banners[i].str);
-        free(advert->banners + i);
-    }
-    free(advert);
+    for (int i = 0; i < MAX_ADVERT_QANT; i++)
+        free(advert->banners[i]);
+    free(advert->banners);
 }
 
 struct line* InputData(FILE* fp, int fsize, int* n)    

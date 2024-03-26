@@ -113,19 +113,20 @@ void fill_window (wizard mood)
 
 void draw_advert (void* Advert)
 {
-    advertisement* advert = (advertisement*)Advert;
     srand ( (unsigned)time(NULL) );
-
-    if (GetKeyState(VK_CAPITAL))
+    
+    advertisement* advert = (advertisement*)Advert;
+    if (advert->qant == 0 ||
+        GetKeyState(VK_CAPITAL))
         return;
 
-    int rnd = rand() % 2;
-    // if (rnd == 1)
-    //     return;
+    int rnd = rand() % 10;
+    if (rnd <= 4)
+        return;
 
-    char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr].str) + strlen("advert\\") + 1, sizeof(char));
+    char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr]) + strlen("advert\\") + 1, sizeof(char));
     strcpy(ad_name, "advert\\");
-    strcat(ad_name, advert->banners[advert->ptr].str);
+    strcat(ad_name, advert->banners[advert->ptr]);
 
     HDC adv = txLoadImage (ad_name);
 
@@ -133,7 +134,7 @@ void draw_advert (void* Advert)
 
     HDC save = txCreateCompatibleDC (1520, 780);
 
-    int x = 200, y = rand() % (780 - txGetExtentY(adv)) + 5;
+    int x = 100, y = rand() % (780 - txGetExtentY(adv)) + 5;
     int m = min(x, y);
     x -= m; y -= m;
 
@@ -159,13 +160,14 @@ void draw_advert (void* Advert)
         t++;
     }
     txEnd();
-    txDeleteDC (adv);
     
+    txDeleteDC (adv);
     txDeleteDC(save);
 
     advert->ptr++;
     if (advert->ptr == advert->qant)
         advert->ptr = 0;
+
     return;
 }
 
@@ -409,10 +411,9 @@ void put_answer (const char* data, wizard mood, int symb_lim)
 
 void put_question (char* data, wizard mood)
 {
-    //_beginthread (say, 0, data);
+    _beginthread (say, 0, data);
 
     fill_window(mood);
-    // printf("%llu \n", sizeof(RGBQUAD) * 1520 * 780);
     //txClear();
     draw_YN_bt();
 
