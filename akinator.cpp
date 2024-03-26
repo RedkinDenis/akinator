@@ -309,8 +309,6 @@ err run_guess (Node* tree, int* run)
 
     while (tree->right != NULL && tree->left != NULL)
     {
-
-        //printf("@@@@@\n");
         ask(tree->data, &advert);
 
         ans = check_answer(YNDN);
@@ -329,7 +327,7 @@ err run_guess (Node* tree, int* run)
         if (check_back_restart(ans, &tree, &dont_know) == FAIL)
             return SUCCESS;
 
-        if (tree->right == NULL && tree->left == NULL)
+        while (tree->right == NULL && tree->left == NULL)
         {
             char* question = make_question(tree->data);
             put_question (question, UNDERSTAND);
@@ -340,7 +338,10 @@ err run_guess (Node* tree, int* run)
             CHECK_FOR_CLOSE (ans, run);
 
             if (ans == YES)
+            {
                 put_answer("От меня ничего не укроется", PROUD);
+                break;
+            }
 
             else if (ans == NO)
             {
@@ -364,7 +365,7 @@ err run_guess (Node* tree, int* run)
     }
     stack_dtor(&dont_know);
 
-    //delete_ad(&advert);
+    delete_ad(&advert);
 
     mySleep(5000);
     return SUCCESS;
@@ -568,6 +569,8 @@ err make_description (Node* tree, const char* obj, char** description)
     split_str(description);
     stack_dtor(&stk);
 
+    *description = (char*)realloc(*description, strlen(*description));
+
     return res;
 }
 
@@ -580,16 +583,17 @@ err fill_description (Stack* stk, char** description)
 
     CALLOC(*(description), char, descr_size);
 
-    for (size_t i = 0; i < stk->size; i++)
+    for (size_t i = 0; i < stk->size - 1; i++)
     {
-        if (i < stk->size - 1 && (stk->data[i])->right == stk->data[i + 1])
+        if ((stk->data[i])->right == stk->data[i + 1])
             strcat(*(description), "не ");
 
         strcat(*(description), stk->data[i]->data);
 
-        if (i == (stk->size - 2))
+        if (i == (stk->size - 3))
+        {
             strcat(*(description), "и");
-
+        }
         strcat(*(description), " ");
     }
 
@@ -603,7 +607,7 @@ err fill_description (Stack* stk, char** description)
             cnt++;
             if (cnt == stk->size)
                 (*description)[i] = '.';
-            else if (cnt == (stk->size - 1))
+            else if (cnt == (stk->size - 2))
                 (*description)[i] = ' ';
             else
                 (*description)[i] = ',';
@@ -639,6 +643,7 @@ err make_description__ (Node* tree, const char* obj, Stack* stk, int* found)
     if (strcmp(tree->data, obj) == 0)
     {
         *found = 1;
+        stack_push(stk, &tree);
         return SUCCESS;
     }
     return FAIL;

@@ -52,6 +52,7 @@ static void draw_ADD_bt ();
 
 static void draw_back_bt ();
 
+static int count_lines (const char* data);
 
 void mySleep (int time)
 {
@@ -113,17 +114,20 @@ void fill_window (wizard mood)
 
 void draw_advert (void* Advert)
 {
+    return;
     srand ( (unsigned)time(NULL) );
     
     advertisement* advert = (advertisement*)Advert;
     if (advert->qant == 0 ||
-        GetKeyState(VK_CAPITAL))
+        GetKeyState(VK_CAPITAL) ||
+        advert->running == 1)
         return;
 
     int rnd = rand() % 10;
     if (rnd <= 4)
         return;
 
+    advert->running = 1;
     char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr]) + strlen("advert\\") + 1, sizeof(char));
     strcpy(ad_name, "advert\\");
     strcat(ad_name, advert->banners[advert->ptr]);
@@ -134,25 +138,29 @@ void draw_advert (void* Advert)
 
     HDC save = txCreateCompatibleDC (1520, 780);
 
-    int x = 100, y = rand() % (780 - txGetExtentY(adv)) + 5;
+    int x = 100, y = 300;
     int m = min(x, y);
     x -= m; y -= m;
 
     int t = 1;
-    int dy = 2;
+    int dy = 5;
     
     txBitBlt (save, 0, 0, 1520, 780, txDC(), 0, 0);
     txBegin();
     while (1)
     {   
-        txBitBlt (txDC(), x + (t%5-1) * 5, y + (t%3-1) * 5, 0, 0, adv, 0, 0);
+        txBitBlt (txDC(), x + (t%5-1) * 3, y + (t%3-1) * 5, 0, 0, adv, 0, 0);
         txRedrawWindow ();
-
-        if (txMouseButtons() == 1)
-            break;
 
         txSleep(30); 
         txBitBlt (txDC(), 0, 0, 1520, 780, save, 0, 0);
+
+        if (txMouseButtons() == 1)
+        {
+            // mySleep(100);
+            // txBitBlt (save, 0, 0, 1520, 780, txDC(), 0, 0);
+            break;
+        }
 
         y += dy;
         if (y >= txGetExtentY())
@@ -160,6 +168,7 @@ void draw_advert (void* Advert)
         t++;
     }
     txEnd();
+    advert->running = 0;
     
     txDeleteDC (adv);
     txDeleteDC(save);
@@ -278,7 +287,7 @@ enum answer check_answer (ans_mode mode)
         draw_back_bt();
     }
 
-    txWaveData_t shlepa = txWaveLoadWav ("shlepa.wav");
+    txWaveData_t shlepa = txWaveLoadWav ("interface\\shlepa.wav");
 
     time_t start = time(NULL);
     while(1)
@@ -381,13 +390,24 @@ void draw_picture (Node* tree)
     txDeleteDC (picture);
 }
 
+int count_lines (const char* data)
+{
+    int lines = 1;
+    for (size_t i = 0; i < strlen(data); i++)
+        if (data[i] == '\n')
+            lines++;
+    return lines;
+}
+
 void put_answer (const char* data, wizard mood, int symb_lim)
 {   
     fill_window(mood);
-    //txClear();
     txSetFillColor (FILD_COLOR);
 
     int data_len = (int)strlen(data);
+    if(symb_lim != 0)
+        data_len = symb_lim;
+
     int wide_coeff = 0;
     if (data_len < 10)
         wide_coeff = 10;
@@ -398,15 +418,19 @@ void put_answer (const char* data, wizard mood, int symb_lim)
     else
         wide_coeff = 7;
 
-    if(symb_lim != 0)
-        data_len = symb_lim;
+    int line_wide = 90;
 
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
+    if (symb_lim != 0)
+    {
+        int lines = count_lines(data);
+        line_wide = 60 * lines;
+    }
+    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + line_wide);
     txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
 
     txSetColor (TX_BLACK);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
+    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + line_wide, data);
 }
 
 void put_question (char* data, wizard mood)
