@@ -114,18 +114,22 @@ void fill_window (wizard mood)
 
 void draw_advert (void* Advert)
 {
-    return;
     srand ( (unsigned)time(NULL) );
-    
+    int rnd = rand() % 10;
+
     advertisement* advert = (advertisement*)Advert;
     if (advert->qant == 0 ||
         GetKeyState(VK_CAPITAL) ||
-        advert->running == 1)
+        advert->running == 1 ||
+        rnd <= 4)
         return;
 
-    int rnd = rand() % 10;
-    if (rnd <= 4)
-        return;
+    BUTTON_ yes = { YES_BUTTON };
+    BUTTON_ no  = { NO_BUTTON };
+    BUTTON_ close = { CLOSE_BUTTON };
+    BUTTON_ Back = { BACK_BUTTON };
+    BUTTON_ restart = { RESTART_BUTTON };
+    BUTTON_ skip  = { SKIP_BUTTON };
 
     advert->running = 1;
     char* ad_name = (char*)calloc(strlen(advert->banners[advert->ptr]) + strlen("advert\\") + 1, sizeof(char));
@@ -159,11 +163,12 @@ void draw_advert (void* Advert)
         {
             // mySleep(100);
             // txBitBlt (save, 0, 0, 1520, 780, txDC(), 0, 0);
-            break;
+            if (mouse_in(&yes) || mouse_in(&no) || mouse_in(&close) || mouse_in(&Back) || mouse_in(&restart) || mouse_in(&skip))
+                break;
         }
 
         y += dy;
-        if (y >= txGetExtentY())
+        if (y >= 780)
             break;
         t++;
     }
@@ -276,7 +281,6 @@ enum answer check_answer (ans_mode mode)
     BUTTON_ close = { CLOSE_BUTTON };
     BUTTON_ Back = { BACK_BUTTON };
     BUTTON_ restart = { RESTART_BUTTON };
-
     BUTTON_ skip  = { SKIP_BUTTON };
 
     if (mode == YNDN)
@@ -409,14 +413,10 @@ void put_answer (const char* data, wizard mood, int symb_lim)
         data_len = symb_lim;
 
     int wide_coeff = 0;
-    if (data_len < 10)
-        wide_coeff = 10;
-    else if (data_len < 20)
-        wide_coeff = 9;
-    else if (data_len < 30)
-        wide_coeff = 8;
-    else
+    if (data_len >= 30)
         wide_coeff = 7;
+    else
+        wide_coeff = 10 - data_len / 10;
 
     int line_wide = 90;
 
@@ -438,7 +438,6 @@ void put_question (char* data, wizard mood)
     _beginthread (say, 0, data);
 
     fill_window(mood);
-    //txClear();
     draw_YN_bt();
 
     txSetFillColor (FILD_COLOR);
@@ -507,8 +506,8 @@ answer InputBox (char* data, const char* message, int data_len)
     const char* temp = txInputBox(message, "Помогите мне стать лучше");
 
     char* try_again = (char*)calloc(
-            strlen("абра кадабра!\n  \nабра кадабра!!!\nабра кадабра") + strlen(message), sizeof(char));
-    strcpy(try_again, "абра кадабра!\n");
+            strlen("Это поле не может быть пустым!\nПоследняя попытка!!!\nДалее игра прервется") + strlen(message), sizeof(char));
+    strcpy(try_again, "Это поле не может быть пустым!\n");
     strcat(try_again, message);
 
     int tryings = 2;

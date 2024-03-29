@@ -193,14 +193,14 @@ err get_node_info (Node* tree)
     CALLOC(left_buf, char, DATA_LEN + 1);
     CALLOC(right_buf, char, DATA_LEN + 1);
 
-    InputBox(left_buf, "Введите значение узла по направлению ДА", DATA_LEN);
+    ans = InputBox(left_buf, "Введите значение узла по направлению ДА", DATA_LEN);
     if (ans == ERR)
     {
         free(left_buf);
         return FAIL;
     }
 
-    InputBox(right_buf, "Введите значение узла по направлению НЕТ", DATA_LEN);
+    ans = InputBox(right_buf, "Введите значение узла по направлению НЕТ", DATA_LEN);
     if (ans == ERR)
     {
         free(left_buf);
@@ -353,7 +353,7 @@ err run_guess (Node* tree, int* run)
                 {
                     err res = add_node(tree);
 
-                    if (res == FAIL)
+                    if (res != SUCCESS)
                         return SUCCESS;
 
                     put_answer("Вам удалось победить меня.", CONFUSED);

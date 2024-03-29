@@ -24,7 +24,7 @@ err stack_dump(struct Stack* stk, int LINE, const char* stk_name, const char* fi
     printf("stack->data adress: %d\n", stk->data);
     printf("capacity - %d\nsize - %d\nstack:\n", stk->capacity, stk->size);
     for(int i = 0; i < stk->size; i++)
-        printf("*[%d] = %p  ", i, stk->data[i]);
+        printf("*[%d] = %s  ", i, stk->data[i]->data);
     for(int i = stk->size; i < stk->capacity; i++)
         printf("*[%p] = poison  ", i);
 

@@ -13,12 +13,14 @@ struct line
 
 struct advertisement
 {
-    struct  line* banners = 0;
+    char** banners = NULL;
     int ptr = 0;
     int qant = 0;
+
+    int running = 0;
 }; 
 
-advertisement input_ad ();
+void find_advert(advertisement* advert);
 
 void delete_ad (advertisement* advert);
 

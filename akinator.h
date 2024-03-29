@@ -2,7 +2,6 @@
 #define AKINATOR_H
 
 #include <cstddef>
-
 #define DATA_LEN 40
 
 typedef char* data_t;
