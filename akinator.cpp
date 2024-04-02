@@ -93,13 +93,13 @@ int main(int argc, char* argv[])
 
     mode md = choose_game_mode(argc, argv);
 
-    if (md == GOD)
-        while (run == 1)
+    while (run == 1)
+    {
+        if (md == GOD)
             change_tree(tree, &run);
-
-    else
-        while (run == 1)
+        else 
             running(tree, &run);
+    }
 
     //print_tree(tree);
 
