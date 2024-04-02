@@ -3,6 +3,9 @@
 
 #include "input_output.h"
 
+#define WINDOW_WIDE 1520
+#define WINDOW_HIGHT 780
+
 enum answer
 {
     YES = 1,
