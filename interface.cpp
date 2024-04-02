@@ -8,25 +8,25 @@
 #include <time.h>
 //#include "input_output.h"
 
-#define YES_BUTTON txGetExtentX() / 2 - 250, txGetExtentY() * 6 / 10, txGetExtentX() / 2 - 50, txGetExtentY() * 6 / 10 + 100
+#define YES_BUTTON WINDOW_WIDE / 2 - 250, WINDOW_HIGHT * 6 / 10, WINDOW_WIDE / 2 - 50, WINDOW_HIGHT * 6 / 10 + 100
 
-#define NO_BUTTON txGetExtentX() / 2 + 50, txGetExtentY() * 6 / 10, txGetExtentX() / 2 + 250, txGetExtentY() * 6 / 10 + 100
+#define NO_BUTTON WINDOW_WIDE / 2 + 50, WINDOW_HIGHT * 6 / 10, WINDOW_WIDE / 2 + 250, WINDOW_HIGHT * 6 / 10 + 100
 
-#define SKIP_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() * 3 / 4, txGetExtentX() / 2 + 150, txGetExtentY() * 3 / 4 + 80
+#define SKIP_BUTTON WINDOW_WIDE / 2 - 150, WINDOW_HIGHT * 3 / 4, WINDOW_WIDE / 2 + 150, WINDOW_HIGHT * 3 / 4 + 80
 
-#define GUESS_BUTTON txGetExtentX() / 2 - 250, txGetExtentY() * 7 / 10, txGetExtentX() / 2 - 50, txGetExtentY() * 7 / 10 + 100
+#define GUESS_BUTTON WINDOW_WIDE / 2 - 250, WINDOW_HIGHT * 7 / 10, WINDOW_WIDE / 2 - 50, WINDOW_HIGHT * 7 / 10 + 100
 
-#define DESCR_BUTTON txGetExtentX() / 2 + 50, txGetExtentY() * 7 / 10, txGetExtentX() / 2 + 250, txGetExtentY() * 7 / 10 + 100
+#define DESCR_BUTTON WINDOW_WIDE / 2 + 50, WINDOW_HIGHT * 7 / 10, WINDOW_WIDE / 2 + 250, WINDOW_HIGHT * 7 / 10 + 100
 
-#define SHOW_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() / 2, txGetExtentX() / 2 + 150, txGetExtentY() / 2 + 80
+#define SHOW_BUTTON WINDOW_WIDE / 2 - 150, WINDOW_HIGHT / 2, WINDOW_WIDE / 2 + 150, WINDOW_HIGHT / 2 + 80
 
-#define CLOSE_BUTTON txGetExtentX() - 50, 0, txGetExtentX(), 37
+#define CLOSE_BUTTON WINDOW_WIDE - 50, 0, WINDOW_WIDE, 37
 
-#define BACK_BUTTON txGetExtentX() - 300, 450, txGetExtentX() - 100, 550
+#define BACK_BUTTON WINDOW_WIDE - 300, 450, WINDOW_WIDE - 100, 550
 
-#define RESTART_BUTTON txGetExtentX() - 300, 600, txGetExtentX() - 100, 700
+#define RESTART_BUTTON WINDOW_WIDE - 300, 600, WINDOW_WIDE - 100, 700
 
-#define ADD_BUTTON txGetExtentX() / 2 - 150, txGetExtentY() * 3 / 4, txGetExtentX() / 2 + 150, txGetExtentY() * 3 / 4 + 80
+#define ADD_BUTTON WINDOW_WIDE / 2 - 150, WINDOW_HIGHT * 3 / 4, WINDOW_WIDE / 2 + 150, WINDOW_HIGHT * 3 / 4 + 80
 
 #define FILD_COLOR RGB(177, 71, 74)
 
@@ -63,7 +63,7 @@ void create_window ()
 {
     _txConsole = -1;
 
-    txCreateWindow (1520, 780);
+    txCreateWindow (WINDOW_WIDE, WINDOW_HIGHT);
 }
 
 void fill_window (wizard mood)
@@ -72,7 +72,7 @@ void fill_window (wizard mood)
     if (!background)
         printf("error in open of background");
 
-    txBitBlt (txDC(), 0, 0, txGetExtentX(), txGetExtentY(), background, 0, 0);
+    txBitBlt (txDC(), 0, 0, WINDOW_WIDE, WINDOW_HIGHT, background, 0, 0);
     txDeleteDC (background);
 
     char* wizard_type = (char*)calloc(DATA_LEN + 1, sizeof(char));
@@ -425,12 +425,12 @@ void put_answer (const char* data, wizard mood, int symb_lim)
         int lines = count_lines(data);
         line_wide = 60 * lines;
     }
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + line_wide);
-    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
+    txRectangle (WINDOW_WIDE / 2 - data_len * wide_coeff, WINDOW_HIGHT / 3, WINDOW_WIDE / 2 + data_len * wide_coeff, WINDOW_HIGHT / 3 + line_wide);
+    txFloodFill (WINDOW_WIDE / 2, WINDOW_HIGHT / 3 + 10);
 
     txSetColor (TX_BLACK);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + line_wide, data);
+    txDrawText(WINDOW_WIDE / 2 - data_len * wide_coeff, WINDOW_HIGHT / 3, WINDOW_WIDE / 2 + data_len * wide_coeff, WINDOW_HIGHT / 3 + line_wide, data);
 }
 
 void put_question (char* data, wizard mood)
@@ -449,12 +449,12 @@ void put_question (char* data, wizard mood)
     else
         wide_coeff = 9;
 
-    txRectangle (txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90);
-    txFloodFill (txGetExtentX() / 2, txGetExtentY() / 3 + 10);
+    txRectangle (WINDOW_WIDE / 2 - data_len * wide_coeff, WINDOW_HIGHT / 3, WINDOW_WIDE / 2 + data_len * wide_coeff, WINDOW_HIGHT / 3 + 90);
+    txFloodFill (WINDOW_WIDE / 2, WINDOW_HIGHT / 3 + 10);
 
     txSetColor (TX_BLACK);
     txSelectFont ("Comic Sans MS", 40);
-    txDrawText(txGetExtentX() / 2 - data_len * wide_coeff, txGetExtentY() / 3, txGetExtentX() / 2 + data_len * wide_coeff, txGetExtentY() / 3 + 90, data);
+    txDrawText(WINDOW_WIDE / 2 - data_len * wide_coeff, WINDOW_HIGHT / 3, WINDOW_WIDE / 2 + data_len * wide_coeff, WINDOW_HIGHT / 3 + 90, data);
 }
 
 enum answer choose_mode ()
