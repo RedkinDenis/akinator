@@ -221,6 +221,9 @@ err print_tree__ (Node* head, int* tab)
     printf("%*s", *tab * 4, "");
 
     printf("*%s*", head->data);
+    if (head->picture != NULL)
+        printf(" *%s*", head->picture);
+    
 
     if (head->left != NULL)
     {
@@ -259,6 +262,8 @@ err fprint_tree__ (FILE* out, Node* head, int* tab)
     fprintf(out, "%*s", *tab * 4, "");
 
     fprintf(out, "*%s*", head->data);
+    if (head->picture != NULL)
+        fprintf(out, " *%s*", head->picture);
 
     if (head->left != NULL)
     {

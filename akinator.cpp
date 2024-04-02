@@ -76,6 +76,7 @@ static void choose_subtree (Node** tree, Stack* stk);
 int main(int argc, char* argv[])
 {
     FOPEN(read, "rtTree.txt", "rb");
+    FOPEN(log, "rtTreeLog.txt", "a");
 
     Node* tree = NULL;
 
@@ -95,11 +96,21 @@ int main(int argc, char* argv[])
 
     while (run == 1)
     {
+        fprintf(log, "\n\n");
+        fprint_tree(log, tree);
+
+        FOPEN(out, "rtTree.txt", "wb");
+
         if (md == GOD)
             change_tree(tree, &run);
+
         else 
             running(tree, &run);
+
+        fprint_tree(out, tree);
+        fclose(out);
     }
+    fclose(log);
 
     //print_tree(tree);
 
