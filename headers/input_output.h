@@ -3,7 +3,7 @@
 
 #include "akinator.h"
 #include "UDL.h"
-#include "..\err_codes.h"
+#include "..\..\err_codes.h"
 
 struct line
 {

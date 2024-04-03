@@ -2,7 +2,7 @@
 #define STACK_H
 
 #include "akinator.h"
-#include "..\err_codes.h"
+#include "..\..\err_codes.h"
 
 typedef struct Node* elem_t;
 

@@ -2,9 +2,9 @@
 #define _TX_SKIP_EXCEPTION EXCEPTION_CPP_MSC
 #include "..\TXLib.h"
 
-#include "interface.h"
+#include "headers/interface.h"
 
-#include "TXWave.h"
+#include "headers/TXWave.h"
 #include <time.h>
 //#include "input_output.h"
 

@@ -1,10 +1,10 @@
-#include "stack.h"
+#include "headers/stack.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>
-#include "UDL.h"
+#include "headers/UDL.h"
 
 static err capacity_down(struct Stack* stk);
 

@@ -1,15 +1,15 @@
-#include "akinator.h"
+#include "headers/akinator.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "input_output.h"
-#include "interface.h"
+#include "headers/input_output.h"
+#include "headers/interface.h"
 #include "..\err_codes.h"
-#include "UDL.h"
-#include "stack.h"
+#include "headers/UDL.h"
+#include "headers/stack.h"
 #include <process.h>
 #include <time.h>
 
@@ -111,14 +111,6 @@ int main(int argc, char* argv[])
         fclose(out);
     }
     fclose(log);
-
-    //print_tree(tree);
-
-    /*FOPEN(out, "rtTree.txt", "wb");
-
-    fprint_tree(out, tree);
-
-    fclose(out);*/
 
     tree_kill(tree);
 }
