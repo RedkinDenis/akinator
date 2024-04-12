@@ -354,10 +354,10 @@ err run_guess (Node* tree, int* run)
                 }
                 else
                 {
-                    err res = add_node(tree);
+                    // err res = add_node(tree);
 
-                    if (res != SUCCESS)
-                        return SUCCESS;
+                    // if (res != SUCCESS)
+                    //     return SUCCESS;
 
                     put_answer("Вам удалось победить меня.", CONFUSED);
 
