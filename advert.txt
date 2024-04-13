@@ -1,0 +1,2 @@
+advert.bmp
+advert_test.bmp
